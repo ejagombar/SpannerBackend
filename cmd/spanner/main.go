@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/ejagombar/SpannerBackend/internal/api"
 	"github.com/ejagombar/SpannerBackend/pkg/shutdown"
 	"github.com/gofiber/fiber/v2"
 	"os"
@@ -56,6 +57,8 @@ func buildServer() (*fiber.App, error) {
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.SendString("Healthy!")
 	})
+
+	api.AddTodoRoutes(app)
 
 	return app, nil
 }
