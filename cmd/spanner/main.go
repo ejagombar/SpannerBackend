@@ -17,7 +17,6 @@ func main() {
 		os.Exit(exitCode)
 	}()
 
-	// load config
 	env, err := config.LoadConfig()
 	if err != nil {
 		fmt.Printf("error: %v", err)
@@ -34,7 +33,6 @@ func main() {
 		return
 	}
 
-	// ensure the server is shutdown gracefully & app runs
 	shutdown.Gracefully()
 }
 
@@ -44,12 +42,10 @@ func run(env config.EnvVars) (func(), error) {
 		return nil, err
 	}
 
-	// start the server
 	go func() {
-		app.Listen("0.0.0.0:8080")
+		app.Listen("0.0.0.0:" + env.PORT)
 	}()
 
-	// return a function to close the server and database
 	return func() {
 		app.Shutdown()
 	}, nil
@@ -57,17 +53,15 @@ func run(env config.EnvVars) (func(), error) {
 }
 
 func buildServer(env config.EnvVars) (*fiber.App, error) {
-	// init the storage
 
 	// create the fiber app
 	app := fiber.New()
 
-	// add health check
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.SendString("Healthy!")
 	})
 
-	api.AddTodoRoutes(app)
+	api.AddTodoRoutes(app, env)
 
 	return app, nil
 }
