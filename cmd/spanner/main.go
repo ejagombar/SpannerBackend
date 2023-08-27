@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/ejagombar/SpannerBackend/config"
 	"github.com/ejagombar/SpannerBackend/internal/api"
 	"github.com/ejagombar/SpannerBackend/pkg/shutdown"
 	"github.com/gofiber/fiber/v2"
@@ -16,7 +17,15 @@ func main() {
 		os.Exit(exitCode)
 	}()
 
-	cleanup, err := run()
+	// load config
+	env, err := config.LoadConfig()
+	if err != nil {
+		fmt.Printf("error: %v", err)
+		exitCode = 1
+		return
+	}
+
+	cleanup, err := run(env)
 
 	defer cleanup()
 	if err != nil {
@@ -29,8 +38,8 @@ func main() {
 	shutdown.Gracefully()
 }
 
-func run() (func(), error) {
-	app, err := buildServer()
+func run(env config.EnvVars) (func(), error) {
+	app, err := buildServer(env)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +56,7 @@ func run() (func(), error) {
 
 }
 
-func buildServer() (*fiber.App, error) {
+func buildServer(env config.EnvVars) (*fiber.App, error) {
 	// init the storage
 
 	// create the fiber app
