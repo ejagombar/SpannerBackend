@@ -4,10 +4,13 @@ import (
 	"fmt"
 	"github.com/ejagombar/SpannerBackend/config"
 	"github.com/ejagombar/SpannerBackend/internal/api"
+	"github.com/ejagombar/SpannerBackend/internal/sessions"
 	"github.com/ejagombar/SpannerBackend/pkg/shutdown"
 	"github.com/gofiber/fiber/v2"
 	"os"
 )
+
+// TODO: add air, work out how to do sessions
 
 func main() {
 
@@ -41,6 +44,8 @@ func run(env config.EnvVars) (func(), error) {
 	if err != nil {
 		return nil, err
 	}
+
+	sessions.Init()
 
 	go func() {
 		app.Listen("0.0.0.0:" + env.PORT)

@@ -24,6 +24,7 @@ func AppConfigMiddleware(env *config.EnvVars) fiber.Handler {
 
 func Login(c *fiber.Ctx) error {
 	env := c.Locals("env").(*config.EnvVars)
+
 	address := spotify.GetLoginURL(env.CLIENT_ID, env.CLIENT_SECRET, "ed")
 	return c.SendString(address)
 }
