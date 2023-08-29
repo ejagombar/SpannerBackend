@@ -13,4 +13,5 @@ func AddTodoRoutes(app *fiber.App, env config.EnvVars, spannerStorage *SpannerSt
 	// add routes here
 	app.Get("/login", spannerStorage.Login)
 	app.Get("/callback", spannerStorage.CompleteAuth)
+	app.Get("/check", spannerStorage.GetLogged)
 }
