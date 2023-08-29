@@ -1,6 +1,7 @@
 package spotify
 
 import (
+	"context"
 	_ "embed"
 	// "fmt"
 	// "log"
@@ -21,6 +22,10 @@ var (
 	tokCh = make(chan *oauth2.Token)
 	state = "1234567IshouldProbablyChangeThis"
 )
+
+type TokenStore struct {
+	token *oauth2.Token
+}
 
 // Creates a authentication request with all the nessecary scopes needed for the CLI tool
 func CreateAuthRequest(spotify_id string, spotify_client string) *spotifyauth.Authenticator {
@@ -48,4 +53,14 @@ func GetLoginURL(spotify_id string, spotify_client string, state string) string 
 	CreateAuthRequest(spotify_id, spotify_client)
 	url := auth.AuthURL(state)
 	return url
+}
+
+func GetUserName(tok *oauth2.Token, ctx context.Context) (string, error) {
+	client := spotify.New(auth.Client(ctx, tok))
+	usr, err := client.CurrentUser(ctx)
+	if err != nil {
+		return "", err
+	}
+	return usr.DisplayName, nil
+
 }
