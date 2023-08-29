@@ -5,12 +5,12 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func AddTodoRoutes(app *fiber.App, env config.EnvVars) {
+func AddTodoRoutes(app *fiber.App, env config.EnvVars, spannerStorage *SpannerStorage) {
 
 	// add middlewares here
 	app.Use(AppConfigMiddleware(&env))
 
 	// add routes here
-	app.Get("/login", Login)
-	app.Get("/callback", CompleteAuth)
+	app.Get("/login", spannerStorage.Login)
+	app.Get("/callback", spannerStorage.CompleteAuth)
 }

@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/ejagombar/SpannerBackend/config"
 	"github.com/ejagombar/SpannerBackend/internal/api"
-	"github.com/ejagombar/SpannerBackend/internal/sessions"
 	"github.com/ejagombar/SpannerBackend/pkg/shutdown"
 	"github.com/gofiber/fiber/v2"
-	"os"
+	"github.com/gofiber/fiber/v2/middleware/session"
 )
 
 // TODO: add air, work out how to do sessions
@@ -27,7 +28,9 @@ func main() {
 		return
 	}
 
-	cleanup, err := run(env)
+	store := api.NewSpannerStorage(session.New())
+
+	cleanup, err := run(env, store)
 
 	defer cleanup()
 	if err != nil {
@@ -39,13 +42,11 @@ func main() {
 	shutdown.Gracefully()
 }
 
-func run(env config.EnvVars) (func(), error) {
-	app, err := buildServer(env)
+func run(env config.EnvVars, store *api.SpannerStorage) (func(), error) {
+	app, err := buildServer(env, store)
 	if err != nil {
 		return nil, err
 	}
-
-	sessions.Init()
 
 	go func() {
 		app.Listen("0.0.0.0:" + env.PORT)
@@ -57,7 +58,7 @@ func run(env config.EnvVars) (func(), error) {
 
 }
 
-func buildServer(env config.EnvVars) (*fiber.App, error) {
+func buildServer(env config.EnvVars, store *api.SpannerStorage) (*fiber.App, error) {
 
 	// create the fiber app
 	app := fiber.New()
@@ -66,7 +67,7 @@ func buildServer(env config.EnvVars) (*fiber.App, error) {
 		return c.SendString("Healthy!")
 	})
 
-	api.AddTodoRoutes(app, env)
+	api.AddTodoRoutes(app, env, store)
 
 	return app, nil
 }
