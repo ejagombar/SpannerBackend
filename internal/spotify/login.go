@@ -51,10 +51,9 @@ func CreateAuthRequest(spotify_id string, spotify_client string) *spotifyauth.Au
 // until a client is recieved which is then returned from the function.
 func GetLoginURL(spotify_id string, spotify_client string, state string) string {
 	CreateAuthRequest(spotify_id, spotify_client)
-	url := auth.AuthURL(state)
+	url := auth.AuthURL(state, spotifyauth.ShowDialog)
 	return url
 }
-
 
 func Client(tok *oauth2.Token, ctx context.Context) (*spotify.Client, context.Context) {
 	return spotify.New(auth.Client(ctx, tok)), ctx

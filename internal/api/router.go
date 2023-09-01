@@ -12,6 +12,7 @@ func AddTodoRoutes(app *fiber.App, env config.EnvVars, spannerStorage *SpannerCo
 
 	// add routes here
 	app.Get("/login", spannerStorage.Login)
+	app.Get("/logout", spannerStorage.Logout)
 	app.Get("/callback", spannerStorage.CompleteAuth)
 	app.Get("/user", spannerStorage.DisplayName)
 	app.Get("/check", spannerStorage.GetLogged)
