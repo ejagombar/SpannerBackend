@@ -3,6 +3,7 @@ package spotify
 import (
 	"context"
 	"fmt"
+
 	"github.com/zmb3/spotify/v2"
 )
 
@@ -11,6 +12,14 @@ var (
 	// playlistID = spotify.ID("06iUfe2cSQJwdXvk77W2Me")
 
 )
+
+func GetTopPlaylistSongs(client *spotify.Client, ctx context.Context, playlistID string, idCount int) ([]string, error) {
+	subset, err := GetTopTracks(client, playlistID, idCount)
+	if err != nil {
+		return nil, err
+	}
+	return subset, nil
+}
 
 func getPlaylistData(client *spotify.Client, playlistData *PlaylistData) (err error) {
 	playlistOptions := "name,description,id"

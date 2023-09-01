@@ -55,24 +55,7 @@ func GetLoginURL(spotify_id string, spotify_client string, state string) string 
 	return url
 }
 
-func GetUserName(tok *oauth2.Token, ctx context.Context) (string, error) {
-	client := spotify.New(auth.Client(ctx, tok))
-	usr, err := client.CurrentUser(ctx)
-	if err != nil {
-		return "", err
-	}
-	return usr.DisplayName, nil
 
-}
-
-func GetTopPlaylistSongs(tok *oauth2.Token, ctx context.Context, playlistID string, idCount int) ([]string, error) {
-	client := spotify.New(auth.Client(ctx, tok))
-
-	subset, err := GetTopTracks(client, playlistID, idCount)
-	if err != nil {
-		return nil, err
-	}
-
-	return subset, nil
-
+func Client(tok *oauth2.Token, ctx context.Context) (*spotify.Client, context.Context) {
+	return spotify.New(auth.Client(ctx, tok)), ctx
 }

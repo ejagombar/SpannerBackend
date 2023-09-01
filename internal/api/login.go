@@ -5,30 +5,26 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
-	"strings"
 	"time"
 
 	"github.com/ejagombar/SpannerBackend/config"
 	"github.com/ejagombar/SpannerBackend/internal/spotify"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
-	"github.com/zmb3/spotify/v2/auth"
-	"golang.org/x/oauth2"
 )
 
 var (
-	auth       *spotifyauth.Authenticator
 	playlistID = "6Wf5xOSUPT0CU4IZPpTTs2"
 )
 
 const redirectURI = "http://localhost:8080/callback"
 
-type SpannerStorage struct {
+type SpannerController struct {
 	session *session.Store
 }
 
-func NewSpannerStorage(session *session.Store) *SpannerStorage {
-	return &SpannerStorage{session: session}
+func NewSpannerStorage(session *session.Store) *SpannerController {
+	return &SpannerController{session: session}
 }
 
 func AppConfigMiddleware(env *config.EnvVars) fiber.Handler {
@@ -46,7 +42,7 @@ func generateState(n int) (string, error) {
 	return base64.StdEncoding.EncodeToString(data), nil
 }
 
-func (s *SpannerStorage) Login(c *fiber.Ctx) error {
+func (s *SpannerController) Login(c *fiber.Ctx) error {
 	env := c.Locals("env").(*config.EnvVars)
 
 	sess, err := s.session.Get(c)
@@ -76,9 +72,9 @@ func (s *SpannerStorage) Login(c *fiber.Ctx) error {
 
 // Handler function that is used to retrieve the token from the spotify authentication webpage
 // This toek is used to create a client.
-func (s *SpannerStorage) CompleteAuth(c *fiber.Ctx) error {
+func (s *SpannerController) CompleteAuth(c *fiber.Ctx) error {
 	env := c.Locals("env").(*config.EnvVars)
-	auth = spotify.CreateAuthRequest(env.CLIENT_ID, env.CLIENT_SECRET)
+	auth := spotify.CreateAuthRequest(env.CLIENT_ID, env.CLIENT_SECRET)
 
 	sess, err := s.session.Get(c)
 	if err != nil {
@@ -88,9 +84,9 @@ func (s *SpannerStorage) CompleteAuth(c *fiber.Ctx) error {
 	fmt.Println(sess.Get("authed"))
 	fmt.Printf("form state: %v    sess state: %v", c.FormValue("state"), sess.Get("state"))
 
-	if state := c.FormValue("state"); state != sess.Get("state") {
-		return fmt.Errorf("state mismatch")
-	}
+	// if state := c.FormValue("state"); state != sess.Get("state") {
+	// 	return fmt.Errorf("state mismatch")
+	// }
 
 	tok, err := auth.Exchange(c.Context(), c.Query("code"))
 	if err != nil {
@@ -110,7 +106,7 @@ func (s *SpannerStorage) CompleteAuth(c *fiber.Ctx) error {
 	return nil
 }
 
-func (s *SpannerStorage) GetLogged(c *fiber.Ctx) error {
+func (s *SpannerController) GetLogged(c *fiber.Ctx) error {
 
 	sess, err := s.session.Get(c)
 	if err != nil {
@@ -122,55 +118,4 @@ func (s *SpannerStorage) GetLogged(c *fiber.Ctx) error {
 	fmt.Println(str)
 
 	return c.SendString(str)
-}
-
-func (s *SpannerStorage) DisplayName(c *fiber.Ctx) error {
-
-	sess, err := s.session.Get(c)
-	if err != nil {
-		return err
-	}
-
-	timeOut, err := time.Parse(time.RFC1123Z, fmt.Sprintf("%v", sess.Get("tokenExpiry")))
-	if err != nil {
-		return err
-	}
-
-	token := new(oauth2.Token)
-	token.AccessToken = fmt.Sprintf("%v", sess.Get("accessToken"))
-	token.RefreshToken = fmt.Sprintf("%v", sess.Get("refreshToken"))
-	token.Expiry = timeOut
-
-	str, err := spotify.GetUserName(token, c.Context())
-	if err != nil {
-		return err
-	}
-
-	return c.SendString(str)
-}
-
-func (s *SpannerStorage) TopPlaylistSongs(c *fiber.Ctx) error {
-
-	sess, err := s.session.Get(c)
-	if err != nil {
-		return err
-	}
-
-	timeOut, err := time.Parse(time.RFC1123Z, fmt.Sprintf("%v", sess.Get("tokenExpiry")))
-	if err != nil {
-		return err
-	}
-
-	token := new(oauth2.Token)
-	token.AccessToken = fmt.Sprintf("%v", sess.Get("accessToken"))
-	token.RefreshToken = fmt.Sprintf("%v", sess.Get("refreshToken"))
-	token.Expiry = timeOut
-
-	idSubset, err := spotify.GetTopPlaylistSongs(token, c.Context(), playlistID, 30)
-	if err != nil {
-		return err
-	}
-
-	out := strings.Join(idSubset, "\n")
-	return c.SendString(out)
 }

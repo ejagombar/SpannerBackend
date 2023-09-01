@@ -5,7 +5,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func AddTodoRoutes(app *fiber.App, env config.EnvVars, spannerStorage *SpannerStorage) {
+func AddTodoRoutes(app *fiber.App, env config.EnvVars, spannerStorage *SpannerController) {
 
 	// add middlewares here
 	app.Use(AppConfigMiddleware(&env))
@@ -16,4 +16,5 @@ func AddTodoRoutes(app *fiber.App, env config.EnvVars, spannerStorage *SpannerSt
 	app.Get("/user", spannerStorage.DisplayName)
 	app.Get("/check", spannerStorage.GetLogged)
 	app.Get("/top", spannerStorage.TopPlaylistSongs)
+	app.Get("/playlists", spannerStorage.UserPlaylists)
 }

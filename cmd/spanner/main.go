@@ -47,7 +47,7 @@ func main() {
 	shutdown.Gracefully()
 }
 
-func run(env config.EnvVars, store *api.SpannerStorage) (func(), error) {
+func run(env config.EnvVars, store *api.SpannerController) (func(), error) {
 	app, err := buildServer(env, store)
 	if err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func run(env config.EnvVars, store *api.SpannerStorage) (func(), error) {
 
 }
 
-func buildServer(env config.EnvVars, store *api.SpannerStorage) (*fiber.App, error) {
+func buildServer(env config.EnvVars, store *api.SpannerController) (*fiber.App, error) {
 
 	// create the fiber app
 	app := fiber.New()
