@@ -30,8 +30,9 @@ func main() {
 	}
 
 	store := api.NewSpannerStorage(session.New(session.Config{
-		CookieSecure: true,
-		KeyLookup:    "cookie:test",
+		CookieSecure:   true,
+		CookieHTTPOnly: true,
+		KeyLookup:      "cookie:session_id",
 	}))
 
 	cleanup, err := run(env, store)

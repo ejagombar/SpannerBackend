@@ -1,4 +1,4 @@
-package spotify 
+package spotify
 
 import (
 	"context"
@@ -53,6 +53,34 @@ func getPlaylistData(client *spotify.Client, playlistData *PlaylistData) (err er
 	}
 
 	return nil
+}
+
+func GetAllUserPlaylists(client *spotify.Client, ctx context.Context, userID string) (userPlaylists []PlaylistData, err error) {
+	playlists, err := client.GetPlaylistsForUser(ctx, userID, spotify.Limit(50))
+	if err != nil {
+		return nil, err
+	}
+
+	totalLength := playlists.Total
+	userPlaylists = make([]PlaylistData, totalLength)
+	totalDownloaded := 0
+
+	for totalDownloaded < playlists.Total {
+		length := len(playlists.Playlists)
+
+		for i := 0; i < length; i++ {
+			userPlaylists[totalDownloaded+i].ID = string(playlists.Playlists[i].ID)
+			userPlaylists[totalDownloaded+i].Name = playlists.Playlists[i].Name
+		}
+		totalDownloaded += length
+
+		playlists, err = client.GetPlaylistsForUser(ctx, userID, spotify.Limit(50), spotify.Offset(totalDownloaded))
+		if err != nil {
+			return nil, fmt.Errorf("Error: %w", err)
+		}
+	}
+
+	return userPlaylists, nil
 }
 
 func requestAndSavePlaylist(client *spotify.Client, fileName string, playlistData *PlaylistData) (err error) {
