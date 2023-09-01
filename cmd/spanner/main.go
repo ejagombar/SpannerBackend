@@ -8,6 +8,7 @@ import (
 	"github.com/ejagombar/SpannerBackend/internal/api"
 	"github.com/ejagombar/SpannerBackend/pkg/shutdown"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/session"
 )
 
@@ -28,7 +29,10 @@ func main() {
 		return
 	}
 
-	store := api.NewSpannerStorage(session.New())
+	store := api.NewSpannerStorage(session.New(session.Config{
+		CookieSecure: true,
+		KeyLookup:    "cookie:test",
+	}))
 
 	cleanup, err := run(env, store)
 
@@ -62,6 +66,11 @@ func buildServer(env config.EnvVars, store *api.SpannerStorage) (*fiber.App, err
 
 	// create the fiber app
 	app := fiber.New()
+
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:     "http://localhost:8080",
+		AllowCredentials: true,
+	}))
 
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.SendString("Healthy!")

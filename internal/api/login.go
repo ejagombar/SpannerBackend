@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"strings"
 	"time"
 
 	"github.com/ejagombar/SpannerBackend/config"
@@ -16,7 +17,8 @@ import (
 )
 
 var (
-	auth *spotifyauth.Authenticator
+	auth       *spotifyauth.Authenticator
+	playlistID = "6Wf5xOSUPT0CU4IZPpTTs2"
 )
 
 const redirectURI = "http://localhost:8080/callback"
@@ -61,9 +63,10 @@ func (s *SpannerStorage) Login(c *fiber.Ctx) error {
 	sess.Set("state", state)
 
 	fmt.Println(state)
-	fmt.Println(sess.Get("state"))
+	fmt.Println(sess.Get("authed"))
 
 	if err := sess.Save(); err != nil {
+		fmt.Println(err)
 		return err
 	}
 
@@ -81,6 +84,9 @@ func (s *SpannerStorage) CompleteAuth(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
+
+	fmt.Println(sess.Get("authed"))
+	fmt.Printf("form state: %v    sess state: %v", c.FormValue("state"), sess.Get("state"))
 
 	if state := c.FormValue("state"); state != sess.Get("state") {
 		return fmt.Errorf("state mismatch")
@@ -141,4 +147,30 @@ func (s *SpannerStorage) DisplayName(c *fiber.Ctx) error {
 	}
 
 	return c.SendString(str)
+}
+
+func (s *SpannerStorage) TopPlaylistSongs(c *fiber.Ctx) error {
+
+	sess, err := s.session.Get(c)
+	if err != nil {
+		return err
+	}
+
+	timeOut, err := time.Parse(time.RFC1123Z, fmt.Sprintf("%v", sess.Get("tokenExpiry")))
+	if err != nil {
+		return err
+	}
+
+	token := new(oauth2.Token)
+	token.AccessToken = fmt.Sprintf("%v", sess.Get("accessToken"))
+	token.RefreshToken = fmt.Sprintf("%v", sess.Get("refreshToken"))
+	token.Expiry = timeOut
+
+	idSubset, err := spotify.GetTopPlaylistSongs(token, c.Context(), playlistID, 30)
+	if err != nil {
+		return err
+	}
+
+	out := strings.Join(idSubset, "\n")
+	return c.SendString(out)
 }
