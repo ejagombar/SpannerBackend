@@ -17,5 +17,6 @@ func AddTodoRoutes(app *fiber.App, env config.EnvVars, spannerStorage *SpannerCo
 	app.Get("/user", spannerStorage.DisplayName)
 	app.Get("/check", spannerStorage.GetLogged)
 	app.Get("/top", spannerStorage.TopPlaylistSongs)
+	app.Get("/tracks", spannerStorage.TopTracks)
 	app.Get("/playlists", spannerStorage.UserPlaylists)
 }

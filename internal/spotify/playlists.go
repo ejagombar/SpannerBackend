@@ -13,7 +13,7 @@ var (
 
 )
 
-func GetTopPlaylistSongs(client *spotify.Client, ctx context.Context, playlistID string, idCount int) ([]string, error) {
+func GetTopPlaylistSongIDs(client *spotify.Client, ctx context.Context, playlistID string, idCount int) ([]string, error) {
 	subset, err := GetTopTracks(client, playlistID, idCount)
 	if err != nil {
 		return nil, err

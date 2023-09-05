@@ -50,7 +50,7 @@ func (s *SpannerController) TopPlaylistSongs(c *fiber.Ctx) error {
 	}
 
 	client, ctx := spotify.Client(token, c.Context())
-	idSubset, err := spotify.GetTopPlaylistSongs(client, ctx, playlistID, 30)
+	idSubset, err := spotify.GetTopPlaylistSongIDs(client, ctx, playlistID, 30)
 	if err != nil {
 		return err
 	}

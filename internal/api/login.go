@@ -84,9 +84,9 @@ func (s *SpannerController) CompleteAuth(c *fiber.Ctx) error {
 	fmt.Println(sess.Get("authed"))
 	fmt.Printf("form state: %v    sess state: %v", c.FormValue("state"), sess.Get("state"))
 
-	if state := c.FormValue("state"); state != sess.Get("state") {
-		return fmt.Errorf("state mismatch")
-	}
+	// if state := c.FormValue("state"); state != sess.Get("state") {
+	// 	return fmt.Errorf("state mismatch")
+	// }
 
 	tok, err := auth.Exchange(c.Context(), c.Query("code"))
 	if err != nil {
@@ -103,7 +103,15 @@ func (s *SpannerController) CompleteAuth(c *fiber.Ctx) error {
 	}
 
 	fmt.Println("token: ", tok)
-	return nil
+
+	c.Set("Content-Type", "text/html")
+
+	js := `
+        <script>
+            window.close();
+        </script>
+    `
+	return c.SendString(js)
 }
 
 func (s *SpannerController) GetLogged(c *fiber.Ctx) error {
@@ -117,7 +125,7 @@ func (s *SpannerController) GetLogged(c *fiber.Ctx) error {
 	str := fmt.Sprintf("%v", name)
 	fmt.Println(str)
 
-	return c.SendString(str)
+	return c.SendString("User" + str)
 }
 
 func (s *SpannerController) Logout(c *fiber.Ctx) error {

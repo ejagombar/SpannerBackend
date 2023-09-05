@@ -60,7 +60,6 @@ func run(env config.EnvVars, store *api.SpannerController) (func(), error) {
 	return func() {
 		app.Shutdown()
 	}, nil
-
 }
 
 func buildServer(env config.EnvVars, store *api.SpannerController) (*fiber.App, error) {
@@ -69,8 +68,10 @@ func buildServer(env config.EnvVars, store *api.SpannerController) (*fiber.App, 
 	app := fiber.New()
 
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     "http://localhost:8080",
+		AllowOrigins: "http://localhost:5173",
+		// AllowOrigins:     "*",
 		AllowCredentials: true,
+		AllowHeaders:     "Origin, Content-Type, Accept",
 	}))
 
 	app.Get("/health", func(c *fiber.Ctx) error {

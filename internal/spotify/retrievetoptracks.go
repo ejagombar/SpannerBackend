@@ -1,4 +1,4 @@
-package spotify 
+package spotify
 
 import (
 	"context"
@@ -34,4 +34,32 @@ func requestAndSaveTopTracks(client *spotify.Client, topTrackIDs []string) (err 
 	fileName := fmt.Sprintf("%v.json", "userTopTracks")
 	SaveStruct(fileName, topTrackIDs)
 	return nil
+}
+
+type Tracks struct {
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	Artist   string `json:"artist"`
+	ImageURL string `json:"imageUrl"`
+}
+
+func RequestTopTracks(client *spotify.Client, timeRange string) (tracks []Tracks, err error) {
+
+	topTracks, err := client.CurrentUsersTopTracks(context.Background(), spotify.Limit(50), spotify.Timerange(spotify.Range(timeRange)))
+	if err != nil {
+		return nil, err
+	}
+
+	length := len(topTracks.Tracks)
+
+	tracks = make([]Tracks, length)
+
+	for i := 0; i < length; i++ {
+		tracks[i].ID = string(topTracks.Tracks[i].ID)
+		tracks[i].Name = topTracks.Tracks[i].Name
+		tracks[i].Artist = topTracks.Tracks[i].Artists[0].Name
+		tracks[i].ImageURL = topTracks.Tracks[i].Album.Images[0].URL
+	}
+
+	return tracks, nil
 }
