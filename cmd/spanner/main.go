@@ -68,8 +68,7 @@ func buildServer(env config.EnvVars, store *api.SpannerController) (*fiber.App, 
 	app := fiber.New()
 
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "http://localhost:5173",
-		// AllowOrigins:     "*",
+		AllowOrigins:     "http://localhost:5173",
 		AllowCredentials: true,
 		AllowHeaders:     "Origin, Content-Type, Accept",
 	}))
