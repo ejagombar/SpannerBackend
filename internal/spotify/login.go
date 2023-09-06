@@ -3,7 +3,7 @@ package spotify
 import (
 	"context"
 	_ "embed"
-	// "fmt"
+	"time"
 	// "log"
 	// "net/http"
 
@@ -22,6 +22,12 @@ var (
 	tokCh = make(chan *oauth2.Token)
 	state = "1234567IshouldProbablyChangeThis"
 )
+
+type TokenData struct {
+	AccessToken  string
+	RefreshToken string
+	Expiry       string
+}
 
 type TokenStore struct {
 	token *oauth2.Token
@@ -55,6 +61,23 @@ func GetLoginURL(spotify_id string, spotify_client string, state string) string 
 	return url
 }
 
-func Client(tok *oauth2.Token, ctx context.Context) (*spotify.Client, context.Context) {
-	return spotify.New(auth.Client(ctx, tok)), ctx
+// func Client(tok *oauth2.Token, ctx context.Context) *spotify.Client {
+// 	return spotify.New(auth.Client(ctx, tok))
+// }
+
+func GetClient(ctx context.Context, tokenData TokenData) (client *spotify.Client, err error) {
+
+	timeOut, err := time.Parse(time.RFC1123Z, tokenData.Expiry)
+	if err != nil {
+		return nil, err
+	}
+
+	token := new(oauth2.Token)
+	token.AccessToken = tokenData.AccessToken
+	token.RefreshToken = tokenData.RefreshToken
+	token.Expiry = timeOut
+
+	client = spotify.New(auth.Client(ctx, token))
+
+	return client, nil
 }

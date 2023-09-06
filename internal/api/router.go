@@ -15,15 +15,15 @@ func AddTodoRoutes(app *fiber.App, env config.EnvVars, spannerStorage *SpannerCo
 	account.Get("/login", spannerStorage.Login)
 	account.Get("/logout", spannerStorage.Logout)
 	account.Get("/callback", spannerStorage.CompleteAuth)
-	account.Get("/check", spannerStorage.GetLogged)
+	account.Get("/check", spannerStorage.GetLoggedStatus)
 
 	// Anything available on the user's spotify profile or any data related directly to them.
 	profile := api.Group("/profile")
 
 	profile.Get("/toptracks")
 	profile.Get("/topartists")
-	profile.Get("/playlists", spannerStorage.UserPlaylists)
-	profile.Get("/name", spannerStorage.DisplayName)
+	profile.Get("/playlists", spannerStorage.GetAllUserPlaylist)
+	profile.Get("/name", spannerStorage.GetName)
 
 	// playlist := api.Group("/playlist")
 

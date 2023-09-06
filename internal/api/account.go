@@ -13,11 +13,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/session"
 )
 
-var (
-	playlistID = "6Wf5xOSUPT0CU4IZPpTTs2"
-)
-
-const redirectURI = "http://localhost:8080/callback"
+const redirectURI = "http://localhost:8080/account/callback"
 
 type SpannerController struct {
 	session *session.Store
@@ -58,9 +54,6 @@ func (s *SpannerController) Login(c *fiber.Ctx) error {
 	sess.Set("authed", false)
 	sess.Set("state", state)
 
-	fmt.Println(state)
-	fmt.Println(sess.Get("authed"))
-
 	if err := sess.Save(); err != nil {
 		fmt.Println(err)
 		return err
@@ -70,8 +63,6 @@ func (s *SpannerController) Login(c *fiber.Ctx) error {
 	return c.SendString(address)
 }
 
-// Handler function that is used to retrieve the token from the spotify authentication webpage
-// This toek is used to create a client.
 func (s *SpannerController) CompleteAuth(c *fiber.Ctx) error {
 	env := c.Locals("env").(*config.EnvVars)
 	auth := spotify.CreateAuthRequest(env.CLIENT_ID, env.CLIENT_SECRET)
@@ -81,9 +72,7 @@ func (s *SpannerController) CompleteAuth(c *fiber.Ctx) error {
 		return err
 	}
 
-	fmt.Println(sess.Get("authed"))
-	fmt.Printf("form state: %v    sess state: %v", c.FormValue("state"), sess.Get("state"))
-
+	// IMPORTANT: STATE IS CURRENTLY NOT BEING CHECKED
 	// if state := c.FormValue("state"); state != sess.Get("state") {
 	// 	return fmt.Errorf("state mismatch")
 	// }
@@ -102,8 +91,6 @@ func (s *SpannerController) CompleteAuth(c *fiber.Ctx) error {
 		return err
 	}
 
-	fmt.Println("token: ", tok)
-
 	c.Set("Content-Type", "text/html")
 
 	js := `
@@ -114,8 +101,7 @@ func (s *SpannerController) CompleteAuth(c *fiber.Ctx) error {
 	return c.SendString(js)
 }
 
-func (s *SpannerController) GetLogged(c *fiber.Ctx) error {
-
+func (s *SpannerController) GetLoggedStatus(c *fiber.Ctx) error {
 	sess, err := s.session.Get(c)
 	if err != nil {
 		return err
@@ -129,7 +115,6 @@ func (s *SpannerController) GetLogged(c *fiber.Ctx) error {
 }
 
 func (s *SpannerController) Logout(c *fiber.Ctx) error {
-
 	sess, err := s.session.Get(c)
 	if err != nil {
 		return err
@@ -139,5 +124,5 @@ func (s *SpannerController) Logout(c *fiber.Ctx) error {
 		return err
 	}
 
-	return c.SendString("Logged out!")
+	return c.SendString("Logged out")
 }

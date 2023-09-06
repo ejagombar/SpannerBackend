@@ -43,9 +43,9 @@ type Tracks struct {
 	ImageURL string `json:"imageUrl"`
 }
 
-func RequestTopTracks(client *spotify.Client, timeRange string) (tracks []Tracks, err error) {
+func RequestTopTracks(client *spotify.Client, ctx context.Context, timeRange string) (tracks []Tracks, err error) {
 
-	topTracks, err := client.CurrentUsersTopTracks(context.Background(), spotify.Limit(50), spotify.Timerange(spotify.Range(timeRange)))
+	topTracks, err := client.CurrentUsersTopTracks(ctx, spotify.Limit(50), spotify.Timerange(spotify.Range(timeRange)))
 	if err != nil {
 		return nil, err
 	}
