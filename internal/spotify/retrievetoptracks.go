@@ -7,6 +7,19 @@ import (
 	"github.com/zmb3/spotify/v2"
 )
 
+type Tracks struct {
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	Artist   string `json:"artist"`
+	ImageURL string `json:"imageUrl"`
+}
+
+type Artists struct {
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	ImageURL string `json:"imageUrl"`
+}
+
 func requestTopTrackIDs(client *spotify.Client, topTrackIDs []string) (err error) {
 	totalDownloaded := 0
 	timeRanges := [3]string{"short_term", "medium_term", "long_term"}
@@ -36,15 +49,7 @@ func requestAndSaveTopTracks(client *spotify.Client, topTrackIDs []string) (err 
 	return nil
 }
 
-type Tracks struct {
-	ID       string `json:"id"`
-	Name     string `json:"name"`
-	Artist   string `json:"artist"`
-	ImageURL string `json:"imageUrl"`
-}
-
 func RequestTopTracks(client *spotify.Client, ctx context.Context, timeRange string) (tracks []Tracks, err error) {
-
 	topTracks, err := client.CurrentUsersTopTracks(ctx, spotify.Limit(50), spotify.Timerange(spotify.Range(timeRange)))
 	if err != nil {
 		return nil, err
@@ -62,4 +67,23 @@ func RequestTopTracks(client *spotify.Client, ctx context.Context, timeRange str
 	}
 
 	return tracks, nil
+}
+
+func RequestTopArtists(client *spotify.Client, ctx context.Context, timeRange string) (artists []Artists, err error) {
+	topArtists, err := client.CurrentUsersTopArtists(ctx, spotify.Limit(50), spotify.Timerange(spotify.Range(timeRange)))
+	if err != nil {
+		return nil, err
+	}
+
+	length := len(topArtists.Artists)
+
+	artists = make([]Artists, length)
+
+	for i := 0; i < length; i++ {
+		artists[i].ID = string(topArtists.Artists[i].ID)
+		artists[i].Name = topArtists.Artists[i].Name
+		artists[i].ImageURL = topArtists.Artists[i].Images[0].URL
+	}
+
+	return artists, nil
 }
