@@ -5,27 +5,44 @@ import (
 	"fmt"
 
 	"github.com/zmb3/spotify/v2"
+	// "golang.org/x/oauth2"
 )
 
 var (
 	playlistID = spotify.ID("6Wf5xOSUPT0CU4IZPpTTs2")
-	// playlistID = spotify.ID("06iUfe2cSQJwdXvk77W2Me")
-
 )
 
-func GetTopPlaylistSongIDs(client *spotify.Client, ctx context.Context, playlistID string, idCount int) ([]string, error) {
-	subset, err := GetTopTracks(client, playlistID, idCount)
+type PlaylistData struct {
+	ID          string   `json:"id"`
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	ImageLink   string   `json:"imagelink"`
+	TrackCount  int      `json:"trackcount"`
+	TrackIDs    []string `json:"trackids"`
+}
+
+func GetPlaylistTopTracks(client *spotify.Client, playlistID string, idCount int) (idSubset []string, err error) {
+	topTracks, err := getAllTopTrackIDs(client)
 	if err != nil {
 		return nil, err
 	}
-	return subset, nil
+
+	playlistData, err := getPlaylistData(client)
+	if err != nil {
+		return nil, err
+	}
+
+	commonElements := findCommonElements(topTracks, playlistData.TrackIDs)
+
+	length := min(idCount, len(playlistData.TrackIDs))
+	return selectIDSubset(commonElements, playlistData.TrackIDs, length)
 }
 
-func getPlaylistData(client *spotify.Client, playlistData *PlaylistData) (err error) {
+func getPlaylistData(client *spotify.Client) (playlistData *PlaylistData, err error) {
 	playlistOptions := "name,description,id"
 	playlistRequest, err := client.GetPlaylist(context.Background(), playlistID, spotify.Fields(playlistOptions))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Apparently GetPlaylistTracks is soon to be deprecated and replaced with GetPlayListItems.
@@ -33,10 +50,10 @@ func getPlaylistData(client *spotify.Client, playlistData *PlaylistData) (err er
 	playlistOptions = "limit,offset,total,items(track(id))"
 	playlistItems, err := client.GetPlaylistTracks(context.Background(), playlistID, spotify.Limit(50), spotify.Fields(playlistOptions))
 	if err != nil {
-		return fmt.Errorf("Error:%w", err)
+		return nil, fmt.Errorf("Error:%w", err)
 	}
 	if len(playlistItems.Tracks) == 0 {
-		return fmt.Errorf("No tracks in playlist")
+		return nil, fmt.Errorf("No tracks in playlist")
 	}
 
 	playlistData.ID = string(playlistRequest.ID)
@@ -50,7 +67,7 @@ func getPlaylistData(client *spotify.Client, playlistData *PlaylistData) (err er
 	for totalDownloaded < playlistData.TrackCount {
 		playlistItems, err := client.GetPlaylistTracks(context.Background(), playlistID, spotify.Limit(50), spotify.Fields(playlistOptions), spotify.Offset(totalDownloaded))
 		if err != nil {
-			return fmt.Errorf("Error:%w", err)
+			return nil, fmt.Errorf("Error:%w", err)
 		}
 
 		length := len(playlistItems.Tracks)
@@ -61,7 +78,7 @@ func getPlaylistData(client *spotify.Client, playlistData *PlaylistData) (err er
 		totalDownloaded += length
 	}
 
-	return nil
+	return playlistData, nil
 }
 
 func GetAllUserPlaylists(client *spotify.Client, ctx context.Context, userID string) (userPlaylists []PlaylistData, err error) {
@@ -90,15 +107,4 @@ func GetAllUserPlaylists(client *spotify.Client, ctx context.Context, userID str
 	}
 
 	return userPlaylists, nil
-}
-
-func requestAndSavePlaylist(client *spotify.Client, fileName string, playlistData *PlaylistData) (err error) {
-	err = getPlaylistData(client, playlistData)
-	if err != nil {
-		return err
-	}
-	fileName = fmt.Sprintf("%v.json", playlistData.ID)
-	SaveStruct(fileName, playlistData)
-
-	return nil
 }

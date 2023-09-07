@@ -24,7 +24,7 @@ func (s *SpannerController) TopTracks(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid time range")
 	}
 
-	topTracks, err := spotify.RequestTopTracks(client, c.Context(), timerange)
+	topTracks, err := spotify.GetTopTracks(client, c.Context(), timerange)
 	if err != nil {
 		return err
 	}
@@ -49,7 +49,7 @@ func (s *SpannerController) TopArtists(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid time range")
 	}
 
-	topTracks, err := spotify.RequestTopArtists(client, c.Context(), timerange)
+	topTracks, err := spotify.GetTopArtists(client, c.Context(), timerange)
 	if err != nil {
 		return err
 	}

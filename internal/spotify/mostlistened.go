@@ -2,8 +2,6 @@ package spotify
 
 import (
 	"context"
-	_ "embed"
-	"fmt"
 	"github.com/zmb3/spotify/v2"
 )
 
@@ -20,13 +18,14 @@ type Artists struct {
 	ImageURL string `json:"imageUrl"`
 }
 
-func requestTopTrackIDs(client *spotify.Client, topTrackIDs []string) (err error) {
+func getAllTopTrackIDs(client *spotify.Client) (topTrackIDs []string, err error) {
 	totalDownloaded := 0
 	timeRanges := [3]string{"short_term", "medium_term", "long_term"}
+
 	for _, timeRange := range timeRanges {
 		topTracks, err := client.CurrentUsersTopTracks(context.Background(), spotify.Limit(50), spotify.Timerange(spotify.Range(timeRange)))
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		length := len(topTracks.Tracks)
@@ -36,20 +35,10 @@ func requestTopTrackIDs(client *spotify.Client, topTrackIDs []string) (err error
 		}
 		totalDownloaded += length
 	}
-	return nil
+	return topTrackIDs, nil
 }
 
-func requestAndSaveTopTracks(client *spotify.Client, topTrackIDs []string) (err error) {
-	err = requestTopTrackIDs(client, topTrackIDs)
-	if err != nil {
-		return err
-	}
-	fileName := fmt.Sprintf("%v.json", "userTopTracks")
-	SaveStruct(fileName, topTrackIDs)
-	return nil
-}
-
-func RequestTopTracks(client *spotify.Client, ctx context.Context, timeRange string) (tracks []Tracks, err error) {
+func GetTopTracks(client *spotify.Client, ctx context.Context, timeRange string) (tracks []Tracks, err error) {
 	topTracks, err := client.CurrentUsersTopTracks(ctx, spotify.Limit(50), spotify.Timerange(spotify.Range(timeRange)))
 	if err != nil {
 		return nil, err
@@ -69,7 +58,7 @@ func RequestTopTracks(client *spotify.Client, ctx context.Context, timeRange str
 	return tracks, nil
 }
 
-func RequestTopArtists(client *spotify.Client, ctx context.Context, timeRange string) (artists []Artists, err error) {
+func GetTopArtists(client *spotify.Client, ctx context.Context, timeRange string) (artists []Artists, err error) {
 	topArtists, err := client.CurrentUsersTopArtists(ctx, spotify.Limit(50), spotify.Timerange(spotify.Range(timeRange)))
 	if err != nil {
 		return nil, err

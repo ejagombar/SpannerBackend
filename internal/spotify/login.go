@@ -2,10 +2,7 @@ package spotify
 
 import (
 	"context"
-	_ "embed"
 	"time"
-	// "log"
-	// "net/http"
 
 	"github.com/zmb3/spotify/v2"
 	"github.com/zmb3/spotify/v2/auth"
@@ -15,8 +12,6 @@ import (
 const redirectURI = "http://localhost:8080/api/account/callback"
 
 var (
-	//go:embed callback.html
-	form  string
 	auth  *spotifyauth.Authenticator
 	ch    = make(chan *spotify.Client)
 	tokCh = make(chan *oauth2.Token)

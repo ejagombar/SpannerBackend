@@ -12,10 +12,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/session"
 )
 
-// TODO: add air, work out how to do sessions
-
 func main() {
-
 	// setup exit code for graceful shutdown
 	var exitCode int
 	defer func() {
@@ -63,8 +60,6 @@ func run(env config.EnvVars, store *api.SpannerController) (func(), error) {
 }
 
 func buildServer(env config.EnvVars, store *api.SpannerController) (*fiber.App, error) {
-
-	// create the fiber app
 	app := fiber.New()
 
 	app.Use(cors.New(cors.Config{

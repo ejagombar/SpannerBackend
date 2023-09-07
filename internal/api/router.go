@@ -11,7 +11,7 @@ func AddTodoRoutes(app *fiber.App, env config.EnvVars, spannerController *Spanne
 
 	account := api.Group("/account")
 	profile := api.Group("/profile")
-	playlist := api.Group("/playlist")
+	// playlist := api.Group("/playlist")
 
 	// Anything related to spotify authentication and Spanner related account data
 	account.Get("/login", spannerController.Login)
@@ -26,6 +26,6 @@ func AddTodoRoutes(app *fiber.App, env config.EnvVars, spannerController *Spanne
 	profile.Get("/name", spannerController.GetName)
 
 	// Anything related to playlist analysis
-	playlist.Get("")
+	// playlist.Get("")
 
 }

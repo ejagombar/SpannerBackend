@@ -1,47 +1,9 @@
-package spotify 
+package spotify
 
 import (
-	_ "embed"
-	"fmt"
-	"log"
 	"math/rand"
-	"os"
-	"time"
-
 	"errors"
-
-	"github.com/zmb3/spotify/v2"
 )
-
-func GetTopTracks(client *spotify.Client, playlistID string, idCount int) (idSubset []string, err error) {
-	var playlistData PlaylistData
-
-	fileName := fmt.Sprintf("%v.json", playlistID)
-	err = LoadStruct(fileName, &playlistData)
-	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			err = requestAndSavePlaylist(client, fileName, &playlistData)
-		}
-		log.Fatal(err)
-	}
-
-	topTracks := make([]string, 150)
-	fileName = fmt.Sprintf("%v.json", "userTopTracks")
-	err = LoadStruct(fileName, &topTracks)
-	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			err = requestAndSaveTopTracks(client, topTracks)
-		}
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	commonElements := findCommonElements(topTracks, playlistData.TrackIDs)
-
-	length := min(idCount, len(playlistData.TrackIDs))
-	return selectIDSubset(commonElements, playlistData.TrackIDs, length)
-}
 
 func findCommonElements(slice1, slice2 []string) []string {
 	elementsMap := make(map[string]bool)
@@ -78,8 +40,6 @@ func addToSliceIfNotPresent(illegalElements, allElements []string) (out []string
 }
 
 func shuffleStringSlice(slice []string) {
-	rand.Seed(time.Now().UnixNano())
-
 	// Fisher-Yates shuffle algorithm
 	for i := len(slice) - 1; i > 0; i-- {
 		j := rand.Intn(i + 1)
