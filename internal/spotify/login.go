@@ -12,7 +12,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
-const redirectURI = "http://localhost:8080/callback"
+const redirectURI = "http://localhost:8080/api/account/callback"
 
 var (
 	//go:embed callback.html

@@ -8,7 +8,6 @@ import (
 )
 
 func (s *SpannerController) getTokenData(c *fiber.Ctx) (spotify.TokenData, error) {
-
 	tokenData := spotify.TokenData{}
 
 	sess, err := s.session.Get(c)

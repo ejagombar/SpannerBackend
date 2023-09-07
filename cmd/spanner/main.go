@@ -54,7 +54,7 @@ func run(env config.EnvVars, store *api.SpannerController) (func(), error) {
 	}
 
 	go func() {
-		app.Listen("0.0.0.0:" + env.PORT)
+		fmt.Println(app.Listen("0.0.0.0:" + env.PORT))
 	}()
 
 	return func() {

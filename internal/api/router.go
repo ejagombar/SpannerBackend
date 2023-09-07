@@ -5,26 +5,27 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func AddTodoRoutes(app *fiber.App, env config.EnvVars, spannerStorage *SpannerController) {
+func AddTodoRoutes(app *fiber.App, env config.EnvVars, spannerController *SpannerController) {
 
-	api := app.Group("/api", AppConfigMiddleware(&env))
+	app.Use(AppConfigMiddleware(&env))
+	api := app.Group("/api")
 
 	// Anything related to spotify authentication and Spanner related account data
 	account := api.Group("/account")
 
-	account.Get("/login", spannerStorage.Login)
-	account.Get("/logout", spannerStorage.Logout)
-	account.Get("/callback", spannerStorage.CompleteAuth)
-	account.Get("/check", spannerStorage.GetLoggedStatus)
-
 	// Anything available on the user's spotify profile or any data related directly to them.
 	profile := api.Group("/profile")
 
-	profile.Get("/toptracks")
-	profile.Get("/topartists")
-	profile.Get("/playlists", spannerStorage.GetAllUserPlaylist)
-	profile.Get("/name", spannerStorage.GetName)
-
 	// playlist := api.Group("/playlist")
+
+	account.Get("/login", spannerController.Login)
+	account.Get("/logout", spannerController.Logout)
+	account.Get("/callback", spannerController.CompleteAuth)
+	account.Get("/check", spannerController.GetLoggedStatus)
+
+	profile.Get("/toptracks/:timerange", spannerController.TopTracks)
+	// profile.Get("/topartists/:timerange")
+	// profile.Get("/playlists", spannerController.GetAllUserPlaylistIds)
+	profile.Get("/name", spannerController.GetName)
 
 }

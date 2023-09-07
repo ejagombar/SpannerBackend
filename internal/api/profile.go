@@ -1,6 +1,8 @@
 package api
 
 import (
+	"fmt"
+
 	"github.com/ejagombar/SpannerBackend/internal/spotify"
 	"github.com/gofiber/fiber/v2"
 )
@@ -11,18 +13,23 @@ func (s *SpannerController) TopTracks(c *fiber.Ctx) error {
 		return err
 	}
 
+	timerange := fmt.Sprintf("%v", c.Params("timerange"))
+
+	if timerange != "short_term" && timerange != "medium_term" && timerange != "long_term" {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid time range")
+	}
+
 	client, err := spotify.GetClient(c.Context(), tokenData)
 	if err != nil {
 		return err
 	}
 
-	topTracks, err := spotify.RequestTopTracks(client, c.Context(), "short_term")
+	topTracks, err := spotify.RequestTopTracks(client, c.Context(), timerange)
 	if err != nil {
 		return err
 	}
 
-	// return c.Status(fiber.StatusOK).JSON(topTracks) will add this along with better error handling later
-	return c.JSON(topTracks)
+	return c.Status(fiber.StatusOK).JSON(topTracks)
 }
 
 func (s *SpannerController) GetName(c *fiber.Ctx) error {
@@ -44,7 +51,7 @@ func (s *SpannerController) GetName(c *fiber.Ctx) error {
 	return c.SendString(str)
 }
 
-func (s *SpannerController) GetAllUserPlaylist(c *fiber.Ctx) error {
+func (s *SpannerController) GetAllUserPlaylistIds(c *fiber.Ctx) error {
 	tokenData, err := s.getTokenData(c)
 	if err != nil {
 		return err
@@ -65,10 +72,5 @@ func (s *SpannerController) GetAllUserPlaylist(c *fiber.Ctx) error {
 		return err
 	}
 
-	out := ""
-	for i := 0; i < len(playlistIDs); i++ {
-		out = out + playlistIDs[i].Name + "\n"
-	}
-
-	return c.SendString(out)
+	return c.Status(fiber.StatusOK).JSON(playlistIDs)
 }
