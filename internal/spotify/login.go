@@ -61,10 +61,6 @@ func GetLoginURL(spotify_id string, spotify_client string, state string) string 
 	return url
 }
 
-// func Client(tok *oauth2.Token, ctx context.Context) *spotify.Client {
-// 	return spotify.New(auth.Client(ctx, tok))
-// }
-
 func GetClient(ctx context.Context, tokenData TokenData) (client *spotify.Client, err error) {
 
 	timeOut, err := time.Parse(time.RFC1123Z, tokenData.Expiry)
