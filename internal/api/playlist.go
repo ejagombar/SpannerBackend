@@ -1,25 +1,33 @@
 package api
 
-//
-// import (
-// 	"strings"
-//
-// 	"github.com/ejagombar/SpannerBackend/internal/spotify"
-// 	"github.com/gofiber/fiber/v2"
-// )
-//
-// func (s *SpannerController) TopPlaylistSongs(c *fiber.Ctx) error {
-// 	token, err := s.retrieveToken(c)
-// 	if err != nil {
-// 		return err
-// 	}
-//
-// 	client, ctx := spotify.Client(token, c.Context())
-// 	idSubset, err := spotify.GetTopPlaylistSongIDs(client, ctx, playlistID, 30)
-// 	if err != nil {
-// 		return err
-// 	}
-//
-// 	out := strings.Join(idSubset, "\n")
-// 	return c.SendString(out)
-// }
+import (
+	"fmt"
+	"github.com/ejagombar/SpannerBackend/internal/spotify"
+	"github.com/gofiber/fiber/v2"
+	"strconv"
+)
+
+func (s *SpannerController) TopPlaylistTracks(c *fiber.Ctx) error {
+	tokenData, err := s.getTokenData(c)
+	if err != nil {
+		return err
+	}
+
+	client, err := spotify.GetClient(c.Context(), tokenData)
+	if err != nil {
+		return err
+	}
+
+	playlistID := fmt.Sprintf("%v", c.Params("timerange"))
+	maxItemCount, err := strconv.Atoi(c.Params("maxcount"))
+	if err != nil {
+		return err
+	}
+
+	topTracks, err := spotify.GetPlaylistTopTracks(client, playlistID, maxItemCount)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(topTracks)
+}

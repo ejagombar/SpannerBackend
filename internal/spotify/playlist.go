@@ -8,9 +8,7 @@ import (
 	// "golang.org/x/oauth2"
 )
 
-var (
-	playlistID = spotify.ID("6Wf5xOSUPT0CU4IZPpTTs2")
-)
+var ()
 
 type PlaylistData struct {
 	ID          string   `json:"id"`
@@ -27,7 +25,7 @@ func GetPlaylistTopTracks(client *spotify.Client, playlistID string, idCount int
 		return nil, err
 	}
 
-	playlistData, err := getPlaylistData(client)
+	playlistData, err := getPlaylistData(client, playlistID)
 	if err != nil {
 		return nil, err
 	}
@@ -38,9 +36,11 @@ func GetPlaylistTopTracks(client *spotify.Client, playlistID string, idCount int
 	return selectIDSubset(commonElements, playlistData.TrackIDs, length)
 }
 
-func getPlaylistData(client *spotify.Client) (playlistData *PlaylistData, err error) {
+func getPlaylistData(client *spotify.Client, playlistID string) (playlistData *PlaylistData, err error) {
 	playlistOptions := "name,description,id"
-	playlistRequest, err := client.GetPlaylist(context.Background(), playlistID, spotify.Fields(playlistOptions))
+	id := spotify.ID(playlistID)
+
+	playlistRequest, err := client.GetPlaylist(context.Background(), id, spotify.Fields(playlistOptions))
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +48,7 @@ func getPlaylistData(client *spotify.Client) (playlistData *PlaylistData, err er
 	// Apparently GetPlaylistTracks is soon to be deprecated and replaced with GetPlayListItems.
 	// GetPlaylistItems does not work with the fields argument so cannot be used
 	playlistOptions = "limit,offset,total,items(track(id))"
-	playlistItems, err := client.GetPlaylistTracks(context.Background(), playlistID, spotify.Limit(50), spotify.Fields(playlistOptions))
+	playlistItems, err := client.GetPlaylistTracks(context.Background(), id, spotify.Limit(50), spotify.Fields(playlistOptions))
 	if err != nil {
 		return nil, fmt.Errorf("Error:%w", err)
 	}
@@ -65,7 +65,7 @@ func getPlaylistData(client *spotify.Client) (playlistData *PlaylistData, err er
 	playlistData.TrackIDs = make([]string, playlistData.TrackCount)
 
 	for totalDownloaded < playlistData.TrackCount {
-		playlistItems, err := client.GetPlaylistTracks(context.Background(), playlistID, spotify.Limit(50), spotify.Fields(playlistOptions), spotify.Offset(totalDownloaded))
+		playlistItems, err := client.GetPlaylistTracks(context.Background(), id, spotify.Limit(50), spotify.Fields(playlistOptions), spotify.Offset(totalDownloaded))
 		if err != nil {
 			return nil, fmt.Errorf("Error:%w", err)
 		}
