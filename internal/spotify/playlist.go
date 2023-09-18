@@ -81,7 +81,7 @@ func getPlaylistData(client *spotify.Client, playlistID string) (playlistData *P
 	return playlistData, nil
 }
 
-func GetAllUserPlaylists(client *spotify.Client, ctx context.Context, userID string) (userPlaylists []PlaylistData, err error) {
+func AllUserPlaylistIds(client *spotify.Client, ctx context.Context, userID string) (userPlaylists []PlaylistData, err error) {
 	playlists, err := client.GetPlaylistsForUser(ctx, userID, spotify.Limit(50))
 	if err != nil {
 		return nil, err

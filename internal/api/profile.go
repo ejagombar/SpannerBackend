@@ -57,7 +57,7 @@ func (s *SpannerController) TopArtists(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(topTracks)
 }
 
-func (s *SpannerController) GetName(c *fiber.Ctx) error {
+func (s *SpannerController) Name(c *fiber.Ctx) error {
 	tokenData, err := s.getTokenData(c)
 	if err != nil {
 		return err
@@ -76,7 +76,7 @@ func (s *SpannerController) GetName(c *fiber.Ctx) error {
 	return c.SendString(str)
 }
 
-func (s *SpannerController) GetAllUserPlaylistIds(c *fiber.Ctx) error {
+func (s *SpannerController) AllUserPlaylistIds(c *fiber.Ctx) error {
 	tokenData, err := s.getTokenData(c)
 	if err != nil {
 		return err
@@ -92,7 +92,7 @@ func (s *SpannerController) GetAllUserPlaylistIds(c *fiber.Ctx) error {
 		return err
 	}
 
-	playlistIDs, err := spotify.GetAllUserPlaylists(client, c.Context(), userID)
+	playlistIDs, err := spotify.AllUserPlaylistIds(client, c.Context(), userID)
 	if err != nil {
 		return err
 	}

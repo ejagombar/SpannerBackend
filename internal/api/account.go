@@ -101,7 +101,7 @@ func (s *SpannerController) CompleteAuth(c *fiber.Ctx) error {
 	return c.SendString(js)
 }
 
-func (s *SpannerController) GetLoggedStatus(c *fiber.Ctx) error {
+func (s *SpannerController) LoggedStatus(c *fiber.Ctx) error {
 	sess, err := s.session.Get(c)
 	if err != nil {
 		return err
