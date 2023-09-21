@@ -17,7 +17,7 @@ func AddTodoRoutes(app *fiber.App, env config.EnvVars, spannerController *Spanne
 	account.Get("/login", spannerController.Login)
 	account.Get("/logout", spannerController.Logout)
 	account.Get("/callback", spannerController.CompleteAuth)
-	account.Get("/check", spannerController.LoggedStatus)
+	account.Get("/authenticated", spannerController.LoggedStatus)
 
 	// Anything available on the user's spotify profile or any data related directly to them.
 	profile.Get("/toptracks/:timerange", spannerController.TopTracks)

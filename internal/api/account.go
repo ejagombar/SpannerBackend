@@ -107,11 +107,14 @@ func (s *SpannerController) LoggedStatus(c *fiber.Ctx) error {
 		return err
 	}
 
-	name := sess.Get("authed")
-	str := fmt.Sprintf("%v", name)
-	fmt.Println(str)
+	authed := sess.Get("authed")
+	str := fmt.Sprintf("%v", authed)
 
-	return c.SendString("User" + str)
+	if str == "true" {
+		return c.SendStatus(fiber.StatusOK)
+	}
+	return c.SendStatus(fiber.StatusUnauthorized)
+
 }
 
 func (s *SpannerController) Logout(c *fiber.Ctx) error {
