@@ -57,7 +57,7 @@ func (s *SpannerController) TopArtists(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(topTracks)
 }
 
-func (s *SpannerController) Name(c *fiber.Ctx) error {
+func (s *SpannerController) ProfileInfo(c *fiber.Ctx) error {
 	tokenData, err := s.getTokenData(c)
 	if err != nil {
 		return err
@@ -68,12 +68,12 @@ func (s *SpannerController) Name(c *fiber.Ctx) error {
 		return err
 	}
 
-	str, err := spotify.GetUserName(client, c.Context())
+	User, err := spotify.GetUserProfileInfo(client, c.Context())
 	if err != nil {
 		return err
 	}
 
-	return c.SendString(str)
+	return c.Status(fiber.StatusOK).JSON(User)
 }
 
 func (s *SpannerController) AllUserPlaylistIds(c *fiber.Ctx) error {

@@ -110,11 +110,7 @@ func (s *SpannerController) LoggedStatus(c *fiber.Ctx) error {
 	authed := sess.Get("authed")
 	str := fmt.Sprintf("%v", authed)
 
-	if str == "true" {
-		return c.SendStatus(fiber.StatusOK)
-	}
-	return c.SendStatus(fiber.StatusUnauthorized)
-
+	return c.SendString(str)
 }
 
 func (s *SpannerController) Logout(c *fiber.Ctx) error {
@@ -127,5 +123,5 @@ func (s *SpannerController) Logout(c *fiber.Ctx) error {
 		return err
 	}
 
-	return c.SendString("Logged out")
+	return c.SendStatus(fiber.StatusOK)
 }
