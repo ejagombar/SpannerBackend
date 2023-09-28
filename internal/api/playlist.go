@@ -18,7 +18,8 @@ func (s *SpannerController) TopPlaylistTracks(c *fiber.Ctx) error {
 		return err
 	}
 
-	playlistID := fmt.Sprintf("%v", c.Params("timerange"))
+	playlistID := fmt.Sprintf("%v", c.Params("id"))
+	fmt.Println("playlistID", playlistID)
 	maxItemCount, err := strconv.Atoi(c.Params("maxcount"))
 	if err != nil {
 		return err
@@ -30,4 +31,17 @@ func (s *SpannerController) TopPlaylistTracks(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(topTracks)
+}
+
+func (s *SpannerController) TopPlaylistTracks(c *fiber.Ctx) error {
+	tokenData, err := s.getTokenData(c)
+	if err != nil {
+		return err
+	}
+
+	client, err := spotify.GetClient(c.Context(), tokenData)
+	if err != nil {
+		return err
+	}
+
 }
