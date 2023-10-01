@@ -22,7 +22,7 @@ func AddTodoRoutes(app *fiber.App, env config.EnvVars, spannerController *Spanne
 	// Anything available on the user's spotify profile or any data related directly to them.
 	profile.Get("/toptracks/:timerange", spannerController.TopTracks)
 	profile.Get("/topartists/:timerange", spannerController.TopArtists)
-	profile.Get("/allplaylists", spannerController.AllUserPlaylistIds)
+	profile.Get("/userplaylists", spannerController.UserPlaylists)
 	profile.Get("/info", spannerController.ProfileInfo)
 
 	// Anything related to playlist analysis
