@@ -76,26 +76,26 @@ func (s *SpannerController) ProfileInfo(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(User)
 }
 
-func (s *SpannerController) AllUserPlaylistIds(c *fiber.Ctx) error {
+func (s *SpannerController) UserPlaylists(c *fiber.Ctx) error {
 	tokenData, err := s.getTokenData(c)
 	if err != nil {
-		return err
+		return fmt.Errorf("Error getting token data: %w", err)
 	}
 
 	client, err := spotify.GetClient(c.Context(), tokenData)
 	if err != nil {
-		return err
+		return fmt.Errorf("Error getting client: %w", err)
 	}
 
 	userID, err := spotify.GetUserID(client, c.Context())
 	if err != nil {
-		return err
+		return fmt.Errorf("Error getting user ID: %w", err)
 	}
 
-	playlistIDs, err := spotify.AllUserPlaylistIds(client, c.Context(), userID)
+	userPlaylists, err := spotify.UserPlaylists(client, c.Context(), userID)
 	if err != nil {
-		return err
+		return fmt.Errorf("Error getting user playlists: %w", err)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(playlistIDs)
+	return c.Status(fiber.StatusOK).JSON(userPlaylists)
 }
