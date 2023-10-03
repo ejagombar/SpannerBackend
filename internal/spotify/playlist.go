@@ -19,6 +19,15 @@ type PlaylistData struct {
 	TrackIDs    []string `json:"trackids"`
 }
 
+type PlaylistInfo struct {
+	ID          string   `json:"id"`
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	ImageLink   string   `json:"imagelink"`
+
+
+}
+
 func GetPlaylistTopTracks(client *spotify.Client, playlistID string, idCount int) (idSubset []string, err error) {
 	topTracks, err := getAllTopTrackIDs(client)
 	if err != nil {
@@ -81,3 +90,5 @@ func getPlaylistData(client *spotify.Client, playlistID string) (playlistData *P
 	return playlistData, nil
 }
 
+
+func GetPlaylistInfo(client *spotify.Client, playlistID string) (playlistInfo PlaylistInfo, err error) {
