@@ -8,8 +8,6 @@ import (
 	// "golang.org/x/oauth2"
 )
 
-var ()
-
 type PlaylistData struct {
 	ID          string   `json:"id"`
 	Name        string   `json:"name"`
@@ -20,12 +18,21 @@ type PlaylistData struct {
 }
 
 type PlaylistInfo struct {
-	ID          string   `json:"id"`
-	Name        string   `json:"name"`
-	Description string   `json:"description"`
-	ImageLink   string   `json:"imagelink"`
+	ID                string   `json:"id"`
+	Name              string   `json:"name"`
+	Description       string   `json:"description"`
+	ImageLink         string   `json:"imagelink"`
+	TopPlaylistTracks []Tracks `json:"topplaylisttracks"`
+	AudioFeatures     AudioFeatures
+}
 
-
+type AudioFeatures struct {
+	acousticness     int
+	danceability     int
+	energy           int
+	instrumentalness int
+	valence          int
+	tempo            int
 }
 
 func GetPlaylistTopTracks(client *spotify.Client, playlistID string, idCount int) (idSubset []string, err error) {
@@ -90,5 +97,60 @@ func getPlaylistData(client *spotify.Client, playlistID string) (playlistData *P
 	return playlistData, nil
 }
 
-
 func GetPlaylistInfo(client *spotify.Client, playlistID string) (playlistInfo PlaylistInfo, err error) {
+	playlistInfo = PlaylistInfo{}
+	topTracks, err := getAllTopTrackIDs(client)
+	if err != nil {
+		return playlistInfo, err
+	}
+
+	playlistData, err := getPlaylistData(client, playlistID)
+	if err != nil {
+		return playlistInfo, err
+	}
+
+	topTrackIDs := findCommonElements(topTracks, playlistData.TrackIDs)
+
+	length := min(100, len(playlistData.TrackIDs))
+	randomSelectedIDs, err := selectIDSubset(topTrackIDs, playlistData.TrackIDs, length)
+
+	fmt.Print(randomSelectedIDs)
+	return playlistInfo, err
+
+}
+
+func GetTrackAudioFeatures(client *spotify.Client, ctx context.Context, trackIDs []string) (trackAudioFeatures []AudioFeatures, err error) {
+
+	const maxTrackIDs = 100
+	arrayLength := min(maxTrackIDs, len(trackIDs))
+	var idArray = make([]spotify.ID, arrayLength)
+
+	for i := 0; i < arrayLength; i++ {
+		idArray[i] = spotify.ID(trackIDs[i])
+	}
+
+	playlists, err := client.GetAudioFeatures(ctx, idArray...)
+	if err != nil {
+		return nil, err
+	}
+
+	totalLength := len(trackIDs)
+	trackAudioFeatures = make([]AudioFeatures, totalLength)
+	totalDownloaded := 0
+
+	for totalDownloaded < totalLength {
+		length := len(playlists.Playlists)
+
+		for i := 0; i < length; i++ {
+			userPlaylists[totalDownloaded+i].TrackCount = playlists.Playlists[i].Tracks.Total
+		}
+		totalDownloaded += length
+
+		playlists, err = client.GetPlaylistsForUser(ctx, userID, spotify.Limit(50), spotify.Offset(totalDownloaded))
+		if err != nil {
+			return nil, fmt.Errorf("Error getting user playlists: %w", err)
+		}
+	}
+
+	return userPlaylists, nil
+}
