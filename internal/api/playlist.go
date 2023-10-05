@@ -43,10 +43,16 @@ func (s *SpannerController) PlaylistAnalysis(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
+
 	playlistID := fmt.Sprintf("%v", c.Params("id"))
 	fmt.Println("playlistID", playlistID)
 
-	return c.SendString("Yipee")
+	playlistAnalysis, err := spotify.GetPlaylistInfo(client, c.Context(), playlistID)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(playlistAnalysis)
 }
 
 // func (s *SpannerController) TopPlaylistTracks(c *fiber.Ctx) error {

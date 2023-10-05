@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/zmb3/spotify/v2"
-	// "golang.org/x/oauth2"
 )
 
 type PlaylistData struct {
@@ -27,12 +26,13 @@ type PlaylistInfo struct {
 }
 
 type AudioFeatures struct {
-	acousticness     int
-	danceability     int
-	energy           int
-	instrumentalness int
-	valence          int
-	tempo            int
+	Acousticness     float32
+	Danceability     float32
+	Energy           float32
+	Instrumentalness float32
+	Valence          float32
+	Tempo            float32
+	Loudness         float32
 }
 
 func GetPlaylistTopTracks(client *spotify.Client, playlistID string, idCount int) (idSubset []string, err error) {
@@ -52,13 +52,15 @@ func GetPlaylistTopTracks(client *spotify.Client, playlistID string, idCount int
 	return selectIDSubset(commonElements, playlistData.TrackIDs, length)
 }
 
-func getPlaylistData(client *spotify.Client, playlistID string) (playlistData *PlaylistData, err error) {
+func getPlaylistData(client *spotify.Client, playlistID string) (playlistData PlaylistData, err error) {
+	playlistData = PlaylistData{}
 	playlistOptions := "name,description,id"
 	id := spotify.ID(playlistID)
 
+	fmt.Println("getting playlistRequest")
 	playlistRequest, err := client.GetPlaylist(context.Background(), id, spotify.Fields(playlistOptions))
 	if err != nil {
-		return nil, err
+		return playlistData, err
 	}
 
 	// Apparently GetPlaylistTracks is soon to be deprecated and replaced with GetPlayListItems.
@@ -66,24 +68,26 @@ func getPlaylistData(client *spotify.Client, playlistID string) (playlistData *P
 	playlistOptions = "limit,offset,total,items(track(id))"
 	playlistItems, err := client.GetPlaylistTracks(context.Background(), id, spotify.Limit(50), spotify.Fields(playlistOptions))
 	if err != nil {
-		return nil, fmt.Errorf("Error:%w", err)
-	}
-	if len(playlistItems.Tracks) == 0 {
-		return nil, fmt.Errorf("No tracks in playlist")
+		return playlistData, fmt.Errorf("Error:%w", err)
 	}
 
 	playlistData.ID = string(playlistRequest.ID)
 	playlistData.Name = playlistRequest.Name
 	playlistData.Description = playlistRequest.Description
-	playlistData.TrackCount = playlistItems.Total
+	playlistData.TrackCount = playlistRequest.Tracks.Total
+	playlistData.TrackCount = 951
+	if playlistRequest.Tracks.Total == 0 {
+		fmt.Println("ERROR NO TRAKCS")
+	}
 
 	totalDownloaded := 0
 	playlistData.TrackIDs = make([]string, playlistData.TrackCount)
 
+	fmt.Println("starting loop")
 	for totalDownloaded < playlistData.TrackCount {
-		playlistItems, err := client.GetPlaylistTracks(context.Background(), id, spotify.Limit(50), spotify.Fields(playlistOptions), spotify.Offset(totalDownloaded))
+		playlistItems, err = client.GetPlaylistTracks(context.Background(), id, spotify.Limit(50), spotify.Fields(playlistOptions), spotify.Offset(totalDownloaded))
 		if err != nil {
-			return nil, fmt.Errorf("Error:%w", err)
+			return playlistData, fmt.Errorf("Error:%w", err)
 		}
 
 		length := len(playlistItems.Tracks)
@@ -92,35 +96,82 @@ func getPlaylistData(client *spotify.Client, playlistID string) (playlistData *P
 			playlistData.TrackIDs[totalDownloaded+i] = string(playlistItems.Tracks[i].Track.ID)
 		}
 		totalDownloaded += length
+
+		fmt.Println("totalDownloaded: ", totalDownloaded)
 	}
 
 	return playlistData, nil
 }
 
-func GetPlaylistInfo(client *spotify.Client, playlistID string) (playlistInfo PlaylistInfo, err error) {
+func GetPlaylistInfo(client *spotify.Client, ctx context.Context, playlistID string) (playlistInfo PlaylistInfo, err error) {
 	playlistInfo = PlaylistInfo{}
 	topTracks, err := getAllTopTrackIDs(client)
 	if err != nil {
 		return playlistInfo, err
 	}
+	fmt.Println("topTracks length: ", len(topTracks))
 
 	playlistData, err := getPlaylistData(client, playlistID)
 	if err != nil {
 		return playlistInfo, err
 	}
 
+	fmt.Println("playlist data: ", playlistData)
+
 	topTrackIDs := findCommonElements(topTracks, playlistData.TrackIDs)
+
+	fmt.Println("top track IDs", topTrackIDs)
 
 	length := min(100, len(playlistData.TrackIDs))
 	randomSelectedIDs, err := selectIDSubset(topTrackIDs, playlistData.TrackIDs, length)
 
-	fmt.Print(randomSelectedIDs)
-	return playlistInfo, err
+	fmt.Println("randomSelectedIDs: ", randomSelectedIDs)
 
+	selectedTrackAudioFeatures, err := GetTrackAudioFeatures(client, ctx, randomSelectedIDs)
+	if err != nil {
+		return playlistInfo, err
+	}
+
+	playlistInfo.AudioFeatures = calculateAverageFeatures(selectedTrackAudioFeatures)
+
+	playlistInfo.TopPlaylistTracks, err = GetTracks(client, ctx, topTrackIDs)
+	if err != nil {
+		return playlistInfo, fmt.Errorf("Error getting top playlist tracks: %w", err)
+	}
+
+	return playlistInfo, nil
+}
+func calculateAverageFeatures(features []AudioFeatures) AudioFeatures {
+	if len(features) == 0 {
+		return AudioFeatures{}
+	}
+
+	var totalAcousticness, totalDanceability, totalEnergy, totalInstrumentalness, totalValence, totalTempo, totalLoudness float32
+
+	for _, f := range features {
+		totalAcousticness += f.Acousticness
+		totalDanceability += f.Danceability
+		totalEnergy += f.Energy
+		totalInstrumentalness += f.Instrumentalness
+		totalValence += f.Valence
+		totalTempo += f.Tempo
+		totalLoudness += f.Loudness
+	}
+
+	averageFeatures := AudioFeatures{
+		Acousticness:     totalAcousticness / float32(len(features)),
+		Danceability:     totalDanceability / float32(len(features)),
+		Energy:           totalEnergy / float32(len(features)),
+		Instrumentalness: totalInstrumentalness / float32(len(features)),
+		Valence:          totalValence / float32(len(features)),
+		Tempo:            totalTempo / float32(len(features)),
+		Loudness:         totalLoudness / float32(len(features)),
+	}
+
+	return averageFeatures
 }
 
 func GetTrackAudioFeatures(client *spotify.Client, ctx context.Context, trackIDs []string) (trackAudioFeatures []AudioFeatures, err error) {
-
 	const maxTrackIDs = 100
 	arrayLength := min(maxTrackIDs, len(trackIDs))
 	var idArray = make([]spotify.ID, arrayLength)
@@ -129,28 +180,64 @@ func GetTrackAudioFeatures(client *spotify.Client, ctx context.Context, trackIDs
 		idArray[i] = spotify.ID(trackIDs[i])
 	}
 
-	playlists, err := client.GetAudioFeatures(ctx, idArray...)
+	track, err := client.GetAudioFeatures(ctx, idArray...)
 	if err != nil {
 		return nil, err
 	}
 
 	totalLength := len(trackIDs)
 	trackAudioFeatures = make([]AudioFeatures, totalLength)
+
+	for i := 0; i < arrayLength; i++ {
+		trackAudioFeatures[i].Tempo = track[i].Tempo
+		trackAudioFeatures[i].Energy = track[i].Energy
+		trackAudioFeatures[i].Valence = track[i].Valence
+		trackAudioFeatures[i].Acousticness = track[i].Acousticness
+		trackAudioFeatures[i].Danceability = track[i].Danceability
+		trackAudioFeatures[i].Instrumentalness = track[i].Instrumentalness
+		trackAudioFeatures[i].Loudness = track[i].Loudness
+
+	}
+
+	return trackAudioFeatures, nil
+}
+
+func GetTracks(client *spotify.Client, ctx context.Context, trackIDs []string) (tracks []Tracks, err error) {
+	const maxSpotifyTracks = 50
+	arrayLength := len(trackIDs)
+	var idArray = make([]spotify.ID, arrayLength)
+
+	for i := 0; i < arrayLength; i++ {
+		idArray[i] = spotify.ID(trackIDs[i])
+	}
+
+	passedTracks := idArray[:(maxSpotifyTracks - 1)]
+	spotifyTracks, err := client.GetTracks(ctx, passedTracks, spotify.Limit(maxSpotifyTracks))
+	if err != nil {
+		return nil, err
+	}
+
+	tracks = make([]Tracks, arrayLength)
 	totalDownloaded := 0
 
-	for totalDownloaded < totalLength {
-		length := len(playlists.Playlists)
+	for totalDownloaded < arrayLength {
+		length := len(spotifyTracks)
 
 		for i := 0; i < length; i++ {
-			userPlaylists[totalDownloaded+i].TrackCount = playlists.Playlists[i].Tracks.Total
+			tracks[totalDownloaded+i].ID = string(spotifyTracks[i].ID)
+			tracks[totalDownloaded+i].Name = spotifyTracks[i].Name
+			tracks[totalDownloaded+i].Artist = spotifyTracks[i].Artists[0].Name
+			tracks[totalDownloaded+i].ImageURL = spotifyTracks[i].Album.Images[0].URL
+
 		}
 		totalDownloaded += length
 
-		playlists, err = client.GetPlaylistsForUser(ctx, userID, spotify.Limit(50), spotify.Offset(totalDownloaded))
+		passedTracks = idArray[totalDownloaded:(totalDownloaded + maxSpotifyTracks)]
+		spotifyTracks, err = client.GetTracks(ctx, passedTracks)
 		if err != nil {
 			return nil, fmt.Errorf("Error getting user playlists: %w", err)
 		}
 	}
 
-	return userPlaylists, nil
+	return tracks, nil
 }

@@ -2,6 +2,7 @@ package spotify
 
 import (
 	"context"
+
 	"github.com/zmb3/spotify/v2"
 )
 
@@ -21,6 +22,7 @@ type Artists struct {
 func getAllTopTrackIDs(client *spotify.Client) (topTrackIDs []string, err error) {
 	totalDownloaded := 0
 	timeRanges := [3]string{"short_term", "medium_term", "long_term"}
+	topTrackIDs = make([]string, 150)
 
 	for _, timeRange := range timeRanges {
 		topTracks, err := client.CurrentUsersTopTracks(context.Background(), spotify.Limit(50), spotify.Timerange(spotify.Range(timeRange)))
