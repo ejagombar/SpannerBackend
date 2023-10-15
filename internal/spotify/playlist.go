@@ -13,14 +13,17 @@ type PlaylistData struct {
 	Description string   `json:"description"`
 	ImageLink   string   `json:"imagelink"`
 	TrackCount  int      `json:"trackcount"`
+	Followers   int      `json:"followers"`
 	TrackIDs    []string `json:"trackids"`
 }
 
-type PlaylistInfo struct {
+type PlaylistAnalysisData struct {
 	ID                string   `json:"id"`
 	Name              string   `json:"name"`
 	Description       string   `json:"description"`
 	ImageLink         string   `json:"imagelink"`
+	Followers         string   `json:"followers"`
+	TrackCount        string   `json:"trackcount"`
 	TopPlaylistTracks []Tracks `json:"topplaylisttracks"`
 	AudioFeatures     AudioFeatures
 }
@@ -33,6 +36,11 @@ type AudioFeatures struct {
 	Valence          float32
 	Tempo            float32
 	Loudness         float32
+}
+
+type AudioFeature struct {
+	Name  string
+	value float32
 }
 
 func GetPlaylistTopTracks(client *spotify.Client, playlistID string, idCount int) (idSubset []string, err error) {
@@ -56,7 +64,7 @@ func getPlaylistData(client *spotify.Client, playlistID string) (playlistData Pl
 	playlistData = PlaylistData{}
 	id := spotify.ID(playlistID)
 
-	playlistOptions := "name,description,id,images,tracks(total),"
+	playlistOptions := "name,description,id,images,tracks(total),followers"
 	playlistRequest, err := client.GetPlaylist(context.Background(), id, spotify.Fields(playlistOptions))
 	if err != nil {
 		return playlistData, err
@@ -73,6 +81,7 @@ func getPlaylistData(client *spotify.Client, playlistID string) (playlistData Pl
 	playlistData.ID = string(playlistRequest.ID)
 	playlistData.Name = playlistRequest.Name
 	playlistData.Description = playlistRequest.Description
+	playlistData.Followers = int(playlistRequest.Followers.Count)
 
 	if len(playlistRequest.Images) > 0 {
 		playlistData.ImageLink = playlistRequest.Images[0].URL
@@ -101,8 +110,8 @@ func getPlaylistData(client *spotify.Client, playlistID string) (playlistData Pl
 	return playlistData, nil
 }
 
-func GetPlaylistInfo(client *spotify.Client, ctx context.Context, playlistID string) (playlistInfo PlaylistInfo, err error) {
-	playlistInfo = PlaylistInfo{}
+func GetPlaylistInfo(client *spotify.Client, ctx context.Context, playlistID string) (playlistInfo PlaylistAnalysisData, err error) {
+	playlistInfo = PlaylistAnalysisData{}
 	topTracks, err := getAllTopTrackIDs(client)
 	if err != nil {
 		return playlistInfo, err
@@ -117,6 +126,8 @@ func GetPlaylistInfo(client *spotify.Client, ctx context.Context, playlistID str
 	playlistInfo.Name = playlistData.Name
 	playlistInfo.Description = playlistData.Description
 	playlistInfo.ImageLink = playlistData.ImageLink
+	playlistInfo.TrackCount = fmt.Sprint(playlistData.TrackCount)
+	playlistInfo.Followers = fmt.Sprint(playlistData.TrackCount)
 
 	topTrackIDs := findCommonElements(topTracks, playlistData.TrackIDs)
 
