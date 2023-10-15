@@ -54,10 +54,9 @@ func GetPlaylistTopTracks(client *spotify.Client, playlistID string, idCount int
 
 func getPlaylistData(client *spotify.Client, playlistID string) (playlistData PlaylistData, err error) {
 	playlistData = PlaylistData{}
-	playlistOptions := "name,description,id"
 	id := spotify.ID(playlistID)
 
-	fmt.Println("getting playlistRequest")
+	playlistOptions := "name,description,id,images,tracks(total),"
 	playlistRequest, err := client.GetPlaylist(context.Background(), id, spotify.Fields(playlistOptions))
 	if err != nil {
 		return playlistData, err
@@ -66,26 +65,25 @@ func getPlaylistData(client *spotify.Client, playlistID string) (playlistData Pl
 	// Apparently GetPlaylistTracks is soon to be deprecated and replaced with GetPlayListItems.
 	// GetPlaylistItems does not work with the fields argument so cannot be used
 	playlistOptions = "limit,offset,total,items(track(id))"
-	playlistItems, err := client.GetPlaylistTracks(context.Background(), id, spotify.Limit(50), spotify.Fields(playlistOptions))
-	if err != nil {
-		return playlistData, fmt.Errorf("Error:%w", err)
-	}
+	// playlistItems, err := client.GetPlaylistTracks(context.Background(), id, spotify.Limit(50), spotify.Fields(playlistOptions))
+	// if err != nil {
+	// 	return playlistData, fmt.Errorf("Error:%w", err)
+	// }
 
 	playlistData.ID = string(playlistRequest.ID)
 	playlistData.Name = playlistRequest.Name
 	playlistData.Description = playlistRequest.Description
-	playlistData.TrackCount = playlistRequest.Tracks.Total
-	playlistData.TrackCount = 951
-	if playlistRequest.Tracks.Total == 0 {
-		fmt.Println("ERROR NO TRAKCS")
+
+	if len(playlistRequest.Images) > 0 {
+		playlistData.ImageLink = playlistRequest.Images[0].URL
 	}
+	playlistData.TrackCount = playlistRequest.Tracks.Total
 
 	totalDownloaded := 0
 	playlistData.TrackIDs = make([]string, playlistData.TrackCount)
 
-	fmt.Println("starting loop")
 	for totalDownloaded < playlistData.TrackCount {
-		playlistItems, err = client.GetPlaylistTracks(context.Background(), id, spotify.Limit(50), spotify.Fields(playlistOptions), spotify.Offset(totalDownloaded))
+		playlistItems, err := client.GetPlaylistTracks(context.Background(), id, spotify.Limit(50), spotify.Offset(totalDownloaded), spotify.Fields(playlistOptions))
 		if err != nil {
 			return playlistData, fmt.Errorf("Error:%w", err)
 		}
@@ -109,23 +107,21 @@ func GetPlaylistInfo(client *spotify.Client, ctx context.Context, playlistID str
 	if err != nil {
 		return playlistInfo, err
 	}
-	fmt.Println("topTracks length: ", len(topTracks))
 
 	playlistData, err := getPlaylistData(client, playlistID)
 	if err != nil {
 		return playlistInfo, err
 	}
 
-	fmt.Println("playlist data: ", playlistData)
+	playlistInfo.ID = playlistData.ID
+	playlistInfo.Name = playlistData.Name
+	playlistInfo.Description = playlistData.Description
+	playlistInfo.ImageLink = playlistData.ImageLink
 
 	topTrackIDs := findCommonElements(topTracks, playlistData.TrackIDs)
 
-	fmt.Println("top track IDs", topTrackIDs)
-
 	length := min(100, len(playlistData.TrackIDs))
 	randomSelectedIDs, err := selectIDSubset(topTrackIDs, playlistData.TrackIDs, length)
-
-	fmt.Println("randomSelectedIDs: ", randomSelectedIDs)
 
 	selectedTrackAudioFeatures, err := GetTrackAudioFeatures(client, ctx, randomSelectedIDs)
 	if err != nil {
@@ -211,32 +207,32 @@ func GetTracks(client *spotify.Client, ctx context.Context, trackIDs []string) (
 		idArray[i] = spotify.ID(trackIDs[i])
 	}
 
-	passedTracks := idArray[:(maxSpotifyTracks - 1)]
-	spotifyTracks, err := client.GetTracks(ctx, passedTracks, spotify.Limit(maxSpotifyTracks))
-	if err != nil {
-		return nil, err
-	}
-
 	tracks = make([]Tracks, arrayLength)
 	totalDownloaded := 0
 
 	for totalDownloaded < arrayLength {
+
+		passedTracksLength := min(maxSpotifyTracks, (arrayLength - totalDownloaded))
+		passedTracks := idArray[totalDownloaded:(totalDownloaded + passedTracksLength)]
+
+		spotifyTracks, err := client.GetTracks(ctx, passedTracks)
+		if err != nil {
+			return nil, fmt.Errorf("Error getting user playlists: %w", err)
+		}
+
 		length := len(spotifyTracks)
 
 		for i := 0; i < length; i++ {
 			tracks[totalDownloaded+i].ID = string(spotifyTracks[i].ID)
 			tracks[totalDownloaded+i].Name = spotifyTracks[i].Name
 			tracks[totalDownloaded+i].Artist = spotifyTracks[i].Artists[0].Name
-			tracks[totalDownloaded+i].ImageURL = spotifyTracks[i].Album.Images[0].URL
+			if len(spotifyTracks[i].Album.Images) > 0 {
+				tracks[totalDownloaded+i].ImageURL = spotifyTracks[i].Album.Images[0].URL
+			}
 
 		}
+
 		totalDownloaded += length
-
-		passedTracks = idArray[totalDownloaded:(totalDownloaded + maxSpotifyTracks)]
-		spotifyTracks, err = client.GetTracks(ctx, passedTracks)
-		if err != nil {
-			return nil, fmt.Errorf("Error getting user playlists: %w", err)
-		}
 	}
 
 	return tracks, nil
