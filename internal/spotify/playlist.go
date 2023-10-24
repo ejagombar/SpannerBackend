@@ -18,14 +18,14 @@ type PlaylistData struct {
 }
 
 type PlaylistAnalysisData struct {
-	ID                string   `json:"id"`
-	Name              string   `json:"name"`
-	Description       string   `json:"description"`
-	ImageLink         string   `json:"imagelink"`
-	Followers         string   `json:"followers"`
-	TrackCount        string   `json:"trackcount"`
-	TopPlaylistTracks []Tracks `json:"topplaylisttracks"`
-	AudioFeatures     AudioFeatures
+	ID                string         `json:"id"`
+	Name              string         `json:"name"`
+	Description       string         `json:"description"`
+	ImageLink         string         `json:"imagelink"`
+	Followers         string         `json:"followers"`
+	TrackCount        string         `json:"trackcount"`
+	TopPlaylistTracks []Tracks       `json:"topplaylisttracks"`
+	AudioFeatures     []AudioFeature `json:"audiofeatures"`
 }
 
 type AudioFeatures struct {
@@ -40,7 +40,7 @@ type AudioFeatures struct {
 
 type AudioFeature struct {
 	Name  string
-	value float32
+	Value float32
 }
 
 func GetPlaylistTopTracks(client *spotify.Client, playlistID string, idCount int) (idSubset []string, err error) {
@@ -139,7 +139,8 @@ func GetPlaylistInfo(client *spotify.Client, ctx context.Context, playlistID str
 		return playlistInfo, err
 	}
 
-	playlistInfo.AudioFeatures = calculateAverageFeatures(selectedTrackAudioFeatures)
+	AudioFeatures := calculateAverageFeatures(selectedTrackAudioFeatures)
+	initializeAudioFeatures(&playlistInfo, &AudioFeatures)
 
 	playlistInfo.TopPlaylistTracks, err = GetTracks(client, ctx, topTrackIDs)
 	if err != nil {
@@ -148,6 +149,19 @@ func GetPlaylistInfo(client *spotify.Client, ctx context.Context, playlistID str
 
 	return playlistInfo, nil
 }
+
+func initializeAudioFeatures(playlistInfo *PlaylistAnalysisData, audioFeatures *AudioFeatures) {
+	playlistInfo.AudioFeatures = []AudioFeature{
+		{"Acousticness", audioFeatures.Acousticness},
+		{"Danceability", audioFeatures.Danceability},
+		{"Energy", audioFeatures.Energy},
+		{"Instrumentalness", audioFeatures.Instrumentalness},
+		{"Valence", audioFeatures.Valence},
+		{"Tempo", audioFeatures.Tempo},
+		{"Loudness", audioFeatures.Loudness},
+	}
+}
+
 func calculateAverageFeatures(features []AudioFeatures) AudioFeatures {
 	if len(features) == 0 {
 		return AudioFeatures{}
