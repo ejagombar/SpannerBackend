@@ -39,8 +39,8 @@ type AudioFeatures struct {
 }
 
 type AudioFeature struct {
-	Name  string
-	Value float32
+	Name  string  `json:"name"`
+	Value float32 `json:"value"`
 }
 
 func GetPlaylistTopTracks(client *spotify.Client, playlistID string, idCount int) (idSubset []string, err error) {
@@ -127,7 +127,7 @@ func GetPlaylistInfo(client *spotify.Client, ctx context.Context, playlistID str
 	playlistInfo.Description = playlistData.Description
 	playlistInfo.ImageLink = playlistData.ImageLink
 	playlistInfo.TrackCount = fmt.Sprint(playlistData.TrackCount)
-	playlistInfo.Followers = fmt.Sprint(playlistData.TrackCount)
+	playlistInfo.Followers = fmt.Sprint(playlistData.Followers)
 
 	topTrackIDs := findCommonElements(topTracks, playlistData.TrackIDs)
 
