@@ -29,13 +29,11 @@ type PlaylistAnalysisData struct {
 }
 
 type AudioFeatures struct {
-	Acousticness     float32
-	Danceability     float32
-	Energy           float32
-	Instrumentalness float32
-	Valence          float32
-	Tempo            float32
-	Loudness         float32
+	Acousticness     float32 `json:"acousticness"`
+	Danceability     float32 `json:"danceability"`
+	Energy           float32 `json:"energy"`
+	Instrumentalness float32 `json:"instrumental"`
+	Valence          float32 `json:"valence"`
 }
 
 type AudioFeature struct {
@@ -157,8 +155,6 @@ func initializeAudioFeatures(playlistInfo *PlaylistAnalysisData, audioFeatures *
 		{"Energy", audioFeatures.Energy},
 		{"Instrumentalness", audioFeatures.Instrumentalness},
 		{"Valence", audioFeatures.Valence},
-		{"Tempo", audioFeatures.Tempo},
-		{"Loudness", audioFeatures.Loudness},
 	}
 }
 
@@ -167,7 +163,7 @@ func calculateAverageFeatures(features []AudioFeatures) AudioFeatures {
 		return AudioFeatures{}
 	}
 
-	var totalAcousticness, totalDanceability, totalEnergy, totalInstrumentalness, totalValence, totalTempo, totalLoudness float32
+	var totalAcousticness, totalDanceability, totalEnergy, totalInstrumentalness, totalValence float32
 
 	for _, f := range features {
 		totalAcousticness += f.Acousticness
@@ -175,8 +171,6 @@ func calculateAverageFeatures(features []AudioFeatures) AudioFeatures {
 		totalEnergy += f.Energy
 		totalInstrumentalness += f.Instrumentalness
 		totalValence += f.Valence
-		totalTempo += f.Tempo
-		totalLoudness += f.Loudness
 	}
 
 	averageFeatures := AudioFeatures{
@@ -185,8 +179,6 @@ func calculateAverageFeatures(features []AudioFeatures) AudioFeatures {
 		Energy:           totalEnergy / float32(len(features)),
 		Instrumentalness: totalInstrumentalness / float32(len(features)),
 		Valence:          totalValence / float32(len(features)),
-		Tempo:            totalTempo / float32(len(features)),
-		Loudness:         totalLoudness / float32(len(features)),
 	}
 
 	return averageFeatures
@@ -210,14 +202,11 @@ func GetTrackAudioFeatures(client *spotify.Client, ctx context.Context, trackIDs
 	trackAudioFeatures = make([]AudioFeatures, totalLength)
 
 	for i := 0; i < arrayLength; i++ {
-		trackAudioFeatures[i].Tempo = track[i].Tempo
 		trackAudioFeatures[i].Energy = track[i].Energy
 		trackAudioFeatures[i].Valence = track[i].Valence
 		trackAudioFeatures[i].Acousticness = track[i].Acousticness
 		trackAudioFeatures[i].Danceability = track[i].Danceability
 		trackAudioFeatures[i].Instrumentalness = track[i].Instrumentalness
-		trackAudioFeatures[i].Loudness = track[i].Loudness
-
 	}
 
 	return trackAudioFeatures, nil
