@@ -15,7 +15,7 @@ var (
 	auth  *spotifyauth.Authenticator
 	ch    = make(chan *spotify.Client)
 	tokCh = make(chan *oauth2.Token)
-	state = "1234567IshouldProbablyChangeThis"
+	state = "1234567IshouldChangeThis"
 )
 
 type TokenData struct {

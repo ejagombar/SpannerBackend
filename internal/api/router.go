@@ -6,7 +6,6 @@ import (
 )
 
 func AddTodoRoutes(app *fiber.App, env config.EnvVars, spannerController *SpannerController) {
-
 	api := app.Group("/api", AppConfigMiddleware(&env))
 
 	account := api.Group("/account")
@@ -28,5 +27,4 @@ func AddTodoRoutes(app *fiber.App, env config.EnvVars, spannerController *Spanne
 	// Anything related to playlist analysis
 	playlist.Get("/:id/toptracks/maxcount=:maxcount", spannerController.TopPlaylistTracks)
 	playlist.Get("/:id/analysis", spannerController.PlaylistAnalysis)
-
 }
