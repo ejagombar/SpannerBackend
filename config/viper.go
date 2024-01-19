@@ -39,13 +39,13 @@ func LoadConfig() (config EnvVars, err error) {
 	// validate config here
 	if config.CLIENT_ID == "" {
 		err = errors.New("CLIENT_ID is required")
-		return
+		return config, err
 	}
 
 	if config.CLIENT_SECRET == "" {
 		err = errors.New("CLIENT_SECRET is required")
-		return
+		return config, err
 	}
 
-	return
+	return config, nil
 }
