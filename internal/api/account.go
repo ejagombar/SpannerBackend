@@ -10,18 +10,9 @@ import (
 	"github.com/ejagombar/SpannerBackend/config"
 	"github.com/ejagombar/SpannerBackend/internal/spotify"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/session"
 )
 
 const redirectURI = "http://localhost:8080/account/callback"
-
-type SpannerController struct {
-	session *session.Store
-}
-
-func NewSpannerStorage(session *session.Store) *SpannerController {
-	return &SpannerController{session: session}
-}
 
 func AppConfigMiddleware(env *config.EnvVars) fiber.Handler {
 	return func(c *fiber.Ctx) error {
