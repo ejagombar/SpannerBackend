@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/ejagombar/SpannerBackend/internal/spotify"
@@ -58,17 +59,21 @@ func (s *SpannerController) TopArtists(c *fiber.Ctx) error {
 }
 
 func (s *SpannerController) ProfileInfo(c *fiber.Ctx) error {
-	tokenData, err := s.getTokenData(c)
+	print("Getting profile info....")
+	tokenData, err := s.getTokenData2(c)
 	if err != nil {
 		return err
 	}
+
+	context := context.Background()
 
 	client, err := spotify.GetClient(c.Context(), tokenData)
 	if err != nil {
 		return err
 	}
+	print("got client")
 
-	User, err := spotify.GetUserProfileInfo(client, c.Context())
+	User, err := spotify.GetUserProfileInfo(client, context)
 	if err != nil {
 		return err
 	}

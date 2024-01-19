@@ -2,7 +2,7 @@ package config
 
 import (
 	"errors"
-	"os"
+	// "os"
 
 	"github.com/spf13/viper"
 )
@@ -17,17 +17,17 @@ type EnvVars struct {
 }
 
 func LoadConfig() (config EnvVars, err error) {
-	env := os.Getenv("GO_ENV")
-	if env == "production" {
-		return EnvVars{
-			CLIENT_ID:     os.Getenv("CLIENT_ID"),
-			CLIENT_SECRET: os.Getenv("CLIENT_SECRET"),
-			PORT:          os.Getenv("PORT"),
-			REFRESH_TOKEN: os.Getenv("REFRESH_TOKEN"),
-			ACCESS_TOKEN:  os.Getenv("ACCESS_TOKEN"),
-			TOKEN_TIMEOUT: os.Getenv("TOKEN_TIMEOUT"),
-		}, nil
-	}
+	// env := os.Getenv("GO_ENV")
+	// if env == "production" {
+	// 	return EnvVars{
+	// 		CLIENT_ID:     os.Getenv("CLIENT_ID"),
+	// 		CLIENT_SECRET: os.Getenv("CLIENT_SECRET"),
+	// 		PORT:          os.Getenv("PORT"),
+	// 		REFRESH_TOKEN: os.Getenv("REFRESH_TOKEN"),
+	// 		ACCESS_TOKEN:  os.Getenv("ACCESS_TOKEN"),
+	// 		TOKEN_TIMEOUT: os.Getenv("TOKEN_TIMEOUT"),
+	// 	}, nil
+	// }
 
 	viper.AddConfigPath(".")
 	viper.SetConfigName("app")

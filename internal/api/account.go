@@ -78,6 +78,8 @@ func (s *SpannerController) CompleteAuth(c *fiber.Ctx) error {
 	sess.Set("refreshToken", tok.RefreshToken)
 	sess.Set("tokenExpiry", tok.Expiry.Format(time.RFC1123Z))
 
+	config.UpdateToken(tok.AccessToken, tok.RefreshToken, tok.Expiry.Format(time.RFC1123Z))
+
 	if err := sess.Save(); err != nil {
 		return err
 	}
