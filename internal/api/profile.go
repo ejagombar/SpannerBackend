@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/ejagombar/SpannerBackend/config"
 	"github.com/ejagombar/SpannerBackend/internal/spotify"
 	"github.com/gofiber/fiber/v2"
 )
@@ -58,20 +59,22 @@ func (s *SpannerController) TopArtists(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(topTracks)
 }
 
-func (s *SpannerController) ProfileInfo(c *fiber.Ctx) error {
-	print("Getting profile info....")
-	tokenData, err := s.getTokenData2(c)
-	if err != nil {
-		return err
-	}
+func ProfileInfo(c *fiber.Ctx) error {
+	var tokenData spotify.TokenData
+	env := c.Locals("env").(*config.EnvVars)
+
+	tokenData.AccessToken = env.ACCESS_TOKEN
+	tokenData.RefreshToken = env.REFRESH_TOKEN
+	tokenData.Expiry = env.TOKEN_TIMEOUT
 
 	context := context.Background()
 
+	print("\nExtracted token data from env vars")
 	client, err := spotify.GetClient(c.Context(), tokenData)
 	if err != nil {
 		return err
 	}
-	print("got client")
+	print("\nCreated client")
 
 	User, err := spotify.GetUserProfileInfo(client, context)
 	if err != nil {

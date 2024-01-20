@@ -62,12 +62,17 @@ func GetClient(ctx context.Context, tokenData TokenData) (client *spotify.Client
 		return nil, err
 	}
 
+	print("\nParsed token expiry")
+
 	token := new(oauth2.Token)
 	token.AccessToken = tokenData.AccessToken
 	token.RefreshToken = tokenData.RefreshToken
 	token.Expiry = timeOut
 
-	client = spotify.New(auth.Client(ctx, token))
+	print("\nCreated token: ", tokenData.Expiry, "\n", tokenData.AccessToken, "\n", tokenData.RefreshToken)
+	clientIn := auth.Client(ctx, token)
+	print("\n Created clientIn\n")
+	client = spotify.New(clientIn)
 
 	return client, nil
 }
