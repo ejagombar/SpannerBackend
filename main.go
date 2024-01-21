@@ -3,13 +3,14 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/ejagombar/SpannerBackend/config"
 	"github.com/ejagombar/SpannerBackend/internal/api"
+	"github.com/ejagombar/SpannerBackend/internal/storage"
 	"github.com/ejagombar/SpannerBackend/pkg/shutdown"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/session"
 )
 
 func main() {
@@ -26,13 +27,7 @@ func main() {
 		return
 	}
 
-	store := api.NewSpannerStorage(session.New(session.Config{
-		CookieSecure:   true,
-		CookieHTTPOnly: true,
-		KeyLookup:      "cookie:session_id",
-	}))
-
-	cleanup, err := run(env, store)
+	cleanup, err := run(env)
 
 	defer cleanup()
 	if err != nil {
@@ -44,8 +39,8 @@ func main() {
 	shutdown.Gracefully()
 }
 
-func run(env config.EnvVars, store *api.SpannerController) (func(), error) {
-	app, err := buildServer(env, store)
+func run(env config.EnvVars) (func(), error) {
+	app, err := buildServer(env)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +54,12 @@ func run(env config.EnvVars, store *api.SpannerController) (func(), error) {
 	}, nil
 }
 
-func buildServer(env config.EnvVars, store *api.SpannerController) (*fiber.App, error) {
+func buildServer(env config.EnvVars) (*fiber.App, error) {
+	db, err := storage.LoadBbolt("data", 1*time.Second)
+	if err != nil {
+		return nil, err
+	}
+
 	app := fiber.New()
 
 	app.Use(cors.New(cors.Config{
@@ -72,7 +72,9 @@ func buildServer(env config.EnvVars, store *api.SpannerController) (*fiber.App, 
 		return c.SendString("Healthy!")
 	})
 
-	api.AddTodoRoutes(app, env, store)
+	spannerStore := api.NewSpannerStorage(db)
+	spannerController := api.NewSpannerController(spannerStore)
+	api.AddTodoRoutes(app, spannerController)
 
 	return app, nil
 }

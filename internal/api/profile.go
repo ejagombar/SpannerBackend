@@ -59,22 +59,18 @@ func (s *SpannerController) TopArtists(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(topTracks)
 }
 
-func ProfileInfo(c *fiber.Ctx) error {
-	var tokenData spotify.TokenData
-	env := c.Locals("env").(*config.EnvVars)
+func (s *SpannerController) ProfileInfo(c *fiber.Ctx) error {
+    accessTok, refreshTok, TokExpiry, err := s.storage.GetToken()
+    if err != nil {
+        return err
+    }
 
-	tokenData.AccessToken = env.ACCESS_TOKEN
-	tokenData.RefreshToken = env.REFRESH_TOKEN
-	tokenData.Expiry = env.TOKEN_TIMEOUT
-
-	context := context.Background()
-
-	print("\nExtracted token data from env vars")
-	client, err := spotify.GetClient(c.Context(), tokenData)
-	if err != nil {
-		return err
-	}
-	print("\nCreated client")
+	// print("\nExtracted token data from env vars")
+	// client, err := spotify.GetClient(c.Context(), tokenData)
+	// if err != nil {
+	// 	return err
+	// }
+	// print("\nCreated client")
 
 	User, err := spotify.GetUserProfileInfo(client, context)
 	if err != nil {

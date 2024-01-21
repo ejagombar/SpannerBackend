@@ -1,13 +1,14 @@
 package api
 
+//
 import (
-	"github.com/gofiber/fiber/v2/middleware/session"
+// "github.com/gofiber/fiber/v2/middleware/session"
 )
 
 type SpannerController struct {
-	session *session.Store
+	storage *SpannerStorage
 }
 
-func NewSpannerStorage(session *session.Store) *SpannerController {
-	return &SpannerController{session: session}
+func NewSpannerController(storage *SpannerStorage) *SpannerController {
+	return &SpannerController{storage: storage}
 }
