@@ -74,6 +74,7 @@ func buildServer(env config.EnvVars) (*fiber.App, error) {
 
 	spannerStore := api.NewSpannerStorage(db)
 	spannerController := api.NewSpannerController(spannerStore)
+    spannerStore.SaveToken(env.ACCESS_TOKEN, env.REFRESH_TOKEN, env.TOKEN_TIMEOUT)
 	api.AddTodoRoutes(app, spannerController)
 
 	return app, nil
