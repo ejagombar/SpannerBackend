@@ -12,7 +12,7 @@ import (
 
 const redirectURI = "http://localhost:8080/account/callback"
 
-func (s *SpannerController) CompleteAuth(c *fiber.Ctx) (*spot.Client, error) {
+func (s *SpannerController) GetClient(c *fiber.Ctx) (*spot.Client, error) {
 	auth := spotify.CreateAuthRequest(s.config.CLIENT_ID, s.config.CLIENT_SECRET)
 
 	accessTok, refreshTok, TokExpiry, err := s.storage.GetToken()

@@ -8,7 +8,7 @@ import (
 )
 
 func (s *SpannerController) TopTracks(c *fiber.Ctx) error {
-	client, err := s.CompleteAuth(c)
+	client, err := s.GetClient(c)
 	if err != nil {
 		return err
 	}
@@ -28,7 +28,7 @@ func (s *SpannerController) TopTracks(c *fiber.Ctx) error {
 }
 
 func (s *SpannerController) TopArtists(c *fiber.Ctx) error {
-	client, err := s.CompleteAuth(c)
+	client, err := s.GetClient(c)
 	if err != nil {
 		return err
 	}
@@ -48,7 +48,7 @@ func (s *SpannerController) TopArtists(c *fiber.Ctx) error {
 }
 
 func (s *SpannerController) ProfileInfo(c *fiber.Ctx) error {
-	client, err := s.CompleteAuth(c)
+	client, err := s.GetClient(c)
 	if err != nil {
 		return err
 	}
@@ -62,7 +62,7 @@ func (s *SpannerController) ProfileInfo(c *fiber.Ctx) error {
 }
 
 func (s *SpannerController) UserPlaylists(c *fiber.Ctx) error {
-	client, err := s.CompleteAuth(c)
+	client, err := s.GetClient(c)
 	if err != nil {
 		return err
 	}

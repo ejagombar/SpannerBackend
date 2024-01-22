@@ -9,7 +9,7 @@ import (
 )
 
 func (s *SpannerController) TopPlaylistTracks(c *fiber.Ctx) error {
-	client, err := s.CompleteAuth(c)
+	client, err := s.GetClient(c)
 	if err != nil {
 		return err
 	}
@@ -30,7 +30,7 @@ func (s *SpannerController) TopPlaylistTracks(c *fiber.Ctx) error {
 }
 
 func (s *SpannerController) PlaylistAnalysis(c *fiber.Ctx) error {
-	client, err := s.CompleteAuth(c)
+	client, err := s.GetClient(c)
 	if err != nil {
 		return err
 	}
