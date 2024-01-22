@@ -16,5 +16,6 @@
 
 *.env
 data
+bbolt_db
 
 tmp/
