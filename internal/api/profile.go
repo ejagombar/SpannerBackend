@@ -1,15 +1,9 @@
 package api
 
 import (
-	"context"
-	// "fmt"
-	"time"
 
 	"github.com/ejagombar/SpannerBackend/internal/spotify"
 	"github.com/gofiber/fiber/v2"
-	spot "github.com/zmb3/spotify/v2"
-	"github.com/zmb3/spotify/v2/auth"
-	"golang.org/x/oauth2"
 )
 
 // func (s *SpannerController) TopTracks(c *fiber.Ctx) error {
@@ -63,29 +57,12 @@ import (
 // }
 
 func (s *SpannerController) ProfileInfo(c *fiber.Ctx) error {
-	accessTok, refreshTok, TokExpiry, err := s.storage.GetToken()
+	client, err := s.CompleteAuth(c)
 	if err != nil {
 		return err
 	}
 
-	timeOut, err := time.Parse(time.RFC1123Z, TokExpiry)
-
-	token := &oauth2.Token{
-		AccessToken:  accessTok,
-		RefreshToken: refreshTok,
-		Expiry:       timeOut,
-	}
-	auth := spotifyauth.New(
-		spotifyauth.WithClientID("9790e41e2b84434a9afc51cf5e163e56"),
-		spotifyauth.WithClientSecret("af384793439049d6983c9a200d826193"),
-		spotifyauth.WithRedirectURL("http://localhost:8080/account/callback"),
-		spotifyauth.WithScopes(spotifyauth.ScopeUserReadPrivate))
-
-	x := auth.Client(context.Background(), token)
-	client := spot.New(x)
-
-    context := context.Background()
-	User, err := spotify.GetUserProfileInfo(client, context)
+	User, err := spotify.GetUserProfileInfo(client, c.Context())
 	if err != nil {
 		return err
 	}

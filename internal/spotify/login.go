@@ -18,7 +18,7 @@ var (
 )
 
 // Creates a authentication request with all the nessecary scopes needed for the CLI tool
-func CreateAuthRequest(spotify_id string, spotify_client string) {
+func CreateAuthRequest(spotify_id string, spotify_client string) *spotifyauth.Authenticator {
 	auth = spotifyauth.New(spotifyauth.WithRedirectURL(redirectURI),
 		spotifyauth.WithClientID(spotify_id),
 		spotifyauth.WithClientSecret(spotify_client),
@@ -34,6 +34,8 @@ func CreateAuthRequest(spotify_id string, spotify_client string) {
 			spotifyauth.ScopeImageUpload,
 			spotifyauth.ScopeUserTopRead,
 			spotifyauth.ScopeUserReadCurrentlyPlaying))
+
+	return auth
 }
 
 func GetClient(accessTok, refreshTok, TokExpiry string) (*spotify.Client, error) {
