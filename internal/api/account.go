@@ -13,23 +13,43 @@ import (
 const redirectURI = "http://localhost:8080/account/callback"
 
 func (s *SpannerController) GetClient(c *fiber.Ctx) (*spotify.Client, error) {
-	auth := processing.CreateAuthRequest(s.config.CLIENT_ID, s.config.CLIENT_SECRET)
+	if s.client == nil {
 
-	accessTok, refreshTok, TokExpiry, err := s.storage.GetToken()
-	if err != nil {
-		return nil, err
+		auth := processing.CreateAuthRequest(s.config.CLIENT_ID, s.config.CLIENT_SECRET)
+
+		storedToken, err := s.storage.GetToken()
+		if err != nil {
+			return nil, err
+		}
+
+		timeOut, err := time.Parse(time.RFC1123Z, storedToken.Expiry)
+		if err != nil {
+			return nil, err
+		}
+
+		token := &oauth2.Token{
+			AccessToken:  storedToken.Access,
+			RefreshToken: storedToken.Refresh,
+			Expiry:       timeOut,
+		}
+
+		s.client = spotify.New(auth.Client(context.Background(), token))
+
+		token, err = s.client.Token()
+		if err != nil {
+			return nil, err
+		}
+
+		s.storage.SaveToken(ConvertTokenType(token))
 	}
-	print("\n access token: ", accessTok, "\n refresh token: ", refreshTok, "\n expiry: ", TokExpiry, "\n")
 
-	timeOut, err := time.Parse(time.RFC1123Z, TokExpiry)
+	return s.client, nil
+}
 
-	token := &oauth2.Token{
-		AccessToken:  accessTok,
-		RefreshToken: refreshTok,
-		Expiry:       timeOut,
+func ConvertTokenType(token *oauth2.Token) Token {
+	return Token{
+		Access:  token.AccessToken,
+		Refresh: token.RefreshToken,
+		Expiry:  token.Expiry.Format(time.RFC1123Z),
 	}
-
-	x := auth.Client(context.Background(), token)
-	client := spotify.New(x)
-	return client, nil
 }

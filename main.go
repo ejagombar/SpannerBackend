@@ -54,7 +54,7 @@ func run(env config.EnvVars) (func(), error) {
 }
 
 func buildServer(env config.EnvVars) (*fiber.App, error) {
-	db, err := storage.LoadBbolt("data", 1*time.Second)
+	db, err := storage.LoadBbolt("bbolt_db", 1*time.Second)
 	if err != nil {
 		return nil, err
 	}
