@@ -10,6 +10,7 @@ import (
 	"github.com/ejagombar/SpannerBackend/internal/storage"
 	"github.com/ejagombar/SpannerBackend/pkg/shutdown"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
 func main() {
@@ -61,12 +62,17 @@ func buildServer(env config.EnvVars) (*fiber.App, error) {
 
 	app := fiber.New()
 
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:     "http://localhost:5173",
+		AllowCredentials: true,
+		AllowHeaders:     "Origin, Content-Type, Accept",
+	}))
+
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.SendString("Healthy!")
 	})
 	spannerStore := api.NewSpannerStorage(db)
 	spannerController := api.NewSpannerController(spannerStore, &env)
-	// spannerStore.SaveToken(ACCESS_TOKEN, REFRESH_TOKEN, TOKEN_TIMEOUT)
 	api.AddTodoRoutes(app, spannerController)
 
 	return app, nil
