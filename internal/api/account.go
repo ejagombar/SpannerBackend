@@ -30,7 +30,6 @@ func (s *SpannerController) GetClient(c *fiber.Ctx) (*spotify.Client, error) {
 			return nil, err
 		}
 
-
 		token := &oauth2.Token{
 			AccessToken:  storedToken.Access,
 			RefreshToken: storedToken.Refresh,
