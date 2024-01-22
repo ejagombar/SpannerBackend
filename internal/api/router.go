@@ -7,15 +7,12 @@ import (
 func AddTodoRoutes(app *fiber.App, spannerController *SpannerController) {
 	api := app.Group("/api")
 
-	// account := api.Group("/account")
+	account := api.Group("/account")
 	profile := api.Group("/profile")
 	playlist := api.Group("/playlist")
 
 	// Anything related to spotify authentication and Spanner related account data
-	// account.Get("/login", Login)
-	// account.Post("/logout", Logout)
-	// account.Get("/callback", CompleteAuth)
-	// account.Get("/authenticated", LoggedStatus)
+	account.Get("/callback", spannerController.CompleteAuth)
 
 	// Anything available on the user's spotify profile or any data related directly to them.
 	profile.Get("/toptracks/:timerange", spannerController.TopTracks)

@@ -26,3 +26,9 @@ func CreateAuthRequest(spotify_id string, spotify_client string) *spotifyauth.Au
 
 	return auth
 }
+
+func GetLoginURL(spotify_id string, spotify_client string, auth *spotifyauth.Authenticator) string {
+	CreateAuthRequest(spotify_id, spotify_client)
+	url := auth.AuthURL("", spotifyauth.ShowDialog)
+	return url
+}
