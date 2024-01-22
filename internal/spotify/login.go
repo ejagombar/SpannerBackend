@@ -1,3 +1,4 @@
+package spotify
 
 import (
 	"github.com/zmb3/spotify/v2/auth"

@@ -19,6 +19,7 @@ func (s *SpannerController) GetClient(c *fiber.Ctx) (*spot.Client, error) {
 	if err != nil {
 		return nil, err
 	}
+    print("\n access token: ", accessTok, "\n refresh token: ", refreshTok, "\n expiry: ", TokExpiry, "\n")
 
 	timeOut, err := time.Parse(time.RFC1123Z, TokExpiry)
 

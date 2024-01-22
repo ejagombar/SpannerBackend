@@ -64,10 +64,9 @@ func buildServer(env config.EnvVars) (*fiber.App, error) {
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.SendString("Healthy!")
 	})
-
 	spannerStore := api.NewSpannerStorage(db)
 	spannerController := api.NewSpannerController(spannerStore, &env)
-	// spannerStore.SaveToken(env.ACCESS_TOKEN, env.REFRESH_TOKEN, env.TOKEN_TIMEOUT)
+	// spannerStore.SaveToken(ACCESS_TOKEN, REFRESH_TOKEN, TOKEN_TIMEOUT)
 	api.AddTodoRoutes(app, spannerController)
 
 	return app, nil
