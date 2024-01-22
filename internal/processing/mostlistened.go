@@ -1,4 +1,4 @@
-package spotify
+package processing
 
 import (
 	"context"

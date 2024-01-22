@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/ejagombar/SpannerBackend/internal/spotify"
+	"github.com/ejagombar/SpannerBackend/internal/processing"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -21,7 +21,7 @@ func (s *SpannerController) TopPlaylistTracks(c *fiber.Ctx) error {
 		return err
 	}
 
-	topTracks, err := spotify.GetPlaylistTopTracks(client, playlistID, maxItemCount)
+	topTracks, err := processing.GetPlaylistTopTracks(client, playlistID, maxItemCount)
 	if err != nil {
 		return err
 	}
@@ -38,7 +38,7 @@ func (s *SpannerController) PlaylistAnalysis(c *fiber.Ctx) error {
 	playlistID := fmt.Sprintf("%v", c.Params("id"))
 	fmt.Println("playlistID", playlistID)
 
-	playlistAnalysis, err := spotify.GetPlaylistInfo(client, c.Context(), playlistID)
+	playlistAnalysis, err := processing.GetPlaylistInfo(client, c.Context(), playlistID)
 	if err != nil {
 		return err
 	}

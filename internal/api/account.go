@@ -4,22 +4,22 @@ import (
 	"context"
 	"time"
 
-	"github.com/ejagombar/SpannerBackend/internal/spotify"
+	"github.com/ejagombar/SpannerBackend/internal/processing"
 	"github.com/gofiber/fiber/v2"
-	spot "github.com/zmb3/spotify/v2"
+	"github.com/zmb3/spotify/v2"
 	"golang.org/x/oauth2"
 )
 
 const redirectURI = "http://localhost:8080/account/callback"
 
-func (s *SpannerController) GetClient(c *fiber.Ctx) (*spot.Client, error) {
-	auth := spotify.CreateAuthRequest(s.config.CLIENT_ID, s.config.CLIENT_SECRET)
+func (s *SpannerController) GetClient(c *fiber.Ctx) (*spotify.Client, error) {
+	auth := processing.CreateAuthRequest(s.config.CLIENT_ID, s.config.CLIENT_SECRET)
 
 	accessTok, refreshTok, TokExpiry, err := s.storage.GetToken()
 	if err != nil {
 		return nil, err
 	}
-    print("\n access token: ", accessTok, "\n refresh token: ", refreshTok, "\n expiry: ", TokExpiry, "\n")
+	print("\n access token: ", accessTok, "\n refresh token: ", refreshTok, "\n expiry: ", TokExpiry, "\n")
 
 	timeOut, err := time.Parse(time.RFC1123Z, TokExpiry)
 
@@ -30,6 +30,6 @@ func (s *SpannerController) GetClient(c *fiber.Ctx) (*spot.Client, error) {
 	}
 
 	x := auth.Client(context.Background(), token)
-	client := spot.New(x)
+	client := spotify.New(x)
 	return client, nil
 }

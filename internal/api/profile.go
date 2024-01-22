@@ -3,7 +3,7 @@ package api
 import (
 	"fmt"
 
-	"github.com/ejagombar/SpannerBackend/internal/spotify"
+	"github.com/ejagombar/SpannerBackend/internal/processing"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -19,7 +19,7 @@ func (s *SpannerController) TopTracks(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid time range")
 	}
 
-	topTracks, err := spotify.GetTopTracks(client, c.Context(), timerange)
+	topTracks, err := processing.GetTopTracks(client, c.Context(), timerange)
 	if err != nil {
 		return err
 	}
@@ -39,7 +39,7 @@ func (s *SpannerController) TopArtists(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid time range")
 	}
 
-	topTracks, err := spotify.GetTopArtists(client, c.Context(), timerange)
+	topTracks, err := processing.GetTopArtists(client, c.Context(), timerange)
 	if err != nil {
 		return err
 	}
@@ -53,7 +53,7 @@ func (s *SpannerController) ProfileInfo(c *fiber.Ctx) error {
 		return err
 	}
 
-	User, err := spotify.GetUserProfileInfo(client, c.Context())
+	User, err := processing.GetUserProfileInfo(client, c.Context())
 	if err != nil {
 		return err
 	}
@@ -67,12 +67,12 @@ func (s *SpannerController) UserPlaylists(c *fiber.Ctx) error {
 		return err
 	}
 
-	userID, err := spotify.GetUserID(client, c.Context())
+	userID, err := processing.GetUserID(client, c.Context())
 	if err != nil {
 		return fmt.Errorf("Error getting user ID: %w", err)
 	}
 
-	userPlaylists, err := spotify.UserPlaylists(client, c.Context(), userID)
+	userPlaylists, err := processing.UserPlaylists(client, c.Context(), userID)
 	if err != nil {
 		return fmt.Errorf("Error getting user playlists: %w", err)
 	}
