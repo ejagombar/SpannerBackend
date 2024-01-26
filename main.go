@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/ejagombar/SpannerBackend/config"
 	"github.com/ejagombar/SpannerBackend/internal/api"
@@ -55,7 +54,7 @@ func run(env config.EnvVars) (func(), error) {
 }
 
 func buildServer(env config.EnvVars) (*fiber.App, error) {
-	db, err := storage.LoadBbolt("bbolt_db", 1*time.Second)
+	db, err := storage.LoadSQLDB(env.DSN)
 	if err != nil {
 		return nil, err
 	}

@@ -1,14 +1,17 @@
 package storage
 
 import (
-    "time"
-    bolt "go.etcd.io/bbolt"
+	"database/sql"
 )
 
-func LoadBbolt(name string, timeout time.Duration) (*bolt.DB, error) {
-    return bolt.Open(name, 0600, &bolt.Options{Timeout: timeout})
+func LoadSQLDB(dsn string) (*sql.DB, error) {
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		return nil, err
+	}
+	return db, err
 }
 
-func CloseBbolt(db *bolt.DB) error {
-    return db.Close()
+func CLoseSQLDB(db *sql.DB) error {
+	return db.Close()
 }

@@ -11,6 +11,7 @@ type EnvVars struct {
 	CLIENT_ID     string `mapstructure:"CLIENT_ID"`
 	CLIENT_SECRET string `mapstructure:"CLIENT_SECRET"`
 	PORT          string `mapstructure:"PORT"`
+	DSN           string `mapstructure:"DSN"`
 }
 
 func LoadConfig() (config EnvVars, err error) {
@@ -20,6 +21,7 @@ func LoadConfig() (config EnvVars, err error) {
 			CLIENT_ID:     os.Getenv("CLIENT_ID"),
 			CLIENT_SECRET: os.Getenv("CLIENT_SECRET"),
 			PORT:          os.Getenv("PORT"),
+			DSN:           os.Getenv("DSN"),
 		}, nil
 	}
 
@@ -44,6 +46,11 @@ func LoadConfig() (config EnvVars, err error) {
 
 	if config.CLIENT_SECRET == "" {
 		err = errors.New("CLIENT_SECRET is required")
+		return config, err
+	}
+
+	if config.DSN == "" {
+		err = errors.New("DB configuration is required")
 		return config, err
 	}
 
