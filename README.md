@@ -1,3 +1,5 @@
+This branch is a modified version of Main which is designed to work with a single account. The refresh token is stored in a database on the server and this allows for it to remain indefinitely logged in. This is required to demo the website as I currently do not have a full access Spotify API key
+
 https://github.com/ejagombar/SpannerBackend/assets/77460324/0cd6d9d1-2a8b-443a-ad08-6397535586c6
 
 # Spanner
