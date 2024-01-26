@@ -18,7 +18,7 @@ func (s *SpannerController) GetClient(c *fiber.Ctx) (*spotify.Client, error) {
 	if s.client == nil {
 		storedToken, err := s.storage.GetToken()
 		if err != nil {
-			return nil, err
+			print(err)
 		}
 
 		auth := processing.CreateAuthRequest(s.config.CLIENT_ID, s.config.CLIENT_SECRET)
@@ -37,6 +37,13 @@ func (s *SpannerController) GetClient(c *fiber.Ctx) (*spotify.Client, error) {
 		}
 
 		s.client = spotify.New(auth.Client(context.Background(), token))
+
+		_, err = s.client.CurrentUser(context.Background())
+		if err != nil {
+			address := processing.GetLoginURL(s.config.CLIENT_ID, s.config.CLIENT_SECRET, auth)
+			print(address)
+			return nil, err
+		}
 
 		token, err = s.client.Token()
 		if err != nil {

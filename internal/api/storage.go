@@ -34,11 +34,11 @@ func NewSpannerStorage(db *sql.DB) *SpannerStorage {
 //
 // 	// Create the necessary table if not exists
 // 	_, err = db.Exec(`
-// 		CREATE TABLE IF NOT EXISTS SpotifyToken (
-// 			AccessToken VARCHAR(255) PRIMARY KEY,
-// 			RefreshToken VARCHAR(255),
-// 			TokenExpiry VARCHAR(255)
-// 		);
+// CREATE TABLE IF NOT EXISTS SpotifyToken (
+// 	AccessToken VARCHAR(350) PRIMARY KEY,
+// 	RefreshToken VARCHAR(350),
+// 	TokenExpiry VARCHAR(255)
+// );
 // 	`)
 // 	if err != nil {
 // 		return nil, err
@@ -49,12 +49,14 @@ func NewSpannerStorage(db *sql.DB) *SpannerStorage {
 
 func (s *SpannerStorage) SaveToken(token Token) error {
 	_, err := s.db.Exec(`
+		DELETE FROM SpotifyToken;
+	`)
+	if err != nil {
+		return err
+	}
+	_, err = s.db.Exec(`
 		INSERT INTO SpotifyToken (AccessToken, RefreshToken, TokenExpiry)
-		VALUES (?, ?, ?)
-		ON DUPLICATE KEY UPDATE
-			AccessToken = VALUES(AccessToken),
-			RefreshToken = VALUES(RefreshToken),
-			TokenExpiry = VALUES(TokenExpiry);
+		VALUES (?, ?, ?);
 	`, token.Access, token.Refresh, token.Expiry)
 	return err
 }
