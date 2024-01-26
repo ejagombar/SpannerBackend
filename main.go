@@ -62,7 +62,7 @@ func buildServer(env config.EnvVars) (*fiber.App, error) {
 	app := fiber.New()
 
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     "http://localhost:5173, spanner-frontend.vercel.app",
+		AllowOrigins:     "http://localhost:5173, https://spanner-frontend.vercel.app, https://spanner.eagombar.uk",
 		AllowCredentials: true,
 		AllowHeaders:     "Origin, Content-Type, Accept",
 	}))
