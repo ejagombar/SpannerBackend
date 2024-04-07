@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"time"
+    "crypto/tls"
+	"golang.org/x/crypto/acme/autocert"
 
 	"github.com/ejagombar/SpannerBackend/config"
 	"github.com/ejagombar/SpannerBackend/internal/api"
@@ -49,9 +51,33 @@ func run(env config.EnvVars) (func(), error) {
 		fmt.Println(app.Listen("0.0.0.0:" + env.PORT))
 	}()
 
+    go func() {
+        fmt.Println("Starting HTTPS server on port 443")
+        ln, err := tls.Listen("tcp", ":443", getTLSConfig())
+        if err != nil {
+            panic(fmt.Sprintf("Error starting HTTPS server: %v", err))
+        }
+        if err := app.Listener(ln); err != nil {
+            panic(fmt.Sprintf("Error running HTTPS server: %v", err))
+        }
+    }()
+
 	return func() {
 		app.Shutdown()
 	}, nil
+}
+
+func getTLSConfig() *tls.Config {
+    m := &autocert.Manager{
+        Prompt: autocert.AcceptTOS,
+        HostPolicy: autocert.HostWhitelist("spanner.eagombar.uk"),
+        Cache: autocert.DirCache("./certs"),
+    }
+
+    return &tls.Config{
+        GetCertificate: m.GetCertificate,
+        NextProtos: []string{"http/1.1", "acme-tls/1"},
+    }
 }
 
 func buildServer(env config.EnvVars) (*fiber.App, error) {
