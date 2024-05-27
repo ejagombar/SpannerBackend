@@ -19,6 +19,9 @@ type Artists struct {
 	ImageURL string `json:"imageUrl"`
 }
 
+// Retrieves the top track IDs for the authenticated Spotify user across different time ranges.
+// It makes requests to the Spotify API to fetch the top tracks for short, medium, and long term.
+// The total limit of returned tracks is capped at 150 (50 tracks per time range).
 func getAllTopTrackIDs(client *spotify.Client) (topTrackIDs []string, err error) {
 	totalDownloaded := 0
 	timeRanges := [3]string{"short_term", "medium_term", "long_term"}

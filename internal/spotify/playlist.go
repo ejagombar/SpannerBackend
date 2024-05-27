@@ -41,6 +41,7 @@ type AudioFeature struct {
 	Value float32 `json:"value"`
 }
 
+// Return a list of playlistIDs that are found in the provided playlist, as well as in the users' top tracks.
 func GetPlaylistTopTracks(client *spotify.Client, playlistID string, idCount int) (idSubset []string, err error) {
 	topTracks, err := getAllTopTrackIDs(client)
 	if err != nil {
@@ -58,6 +59,9 @@ func GetPlaylistTopTracks(client *spotify.Client, playlistID string, idCount int
 	return selectIDSubset(commonElements, playlistData.TrackIDs, length)
 }
 
+// Returns a playlistData struct that contains the data relating to the provided playlistID
+// NOTE: GetPlaylistTracks is soon to be deprecated and replaced with GetPlayListItems.
+// However, GetPlaylistItems does not work with the fields argument so cannot be used
 func getPlaylistData(client *spotify.Client, playlistID string) (playlistData PlaylistData, err error) {
 	playlistData = PlaylistData{}
 	id := spotify.ID(playlistID)
@@ -68,13 +72,7 @@ func getPlaylistData(client *spotify.Client, playlistID string) (playlistData Pl
 		return playlistData, err
 	}
 
-	// Apparently GetPlaylistTracks is soon to be deprecated and replaced with GetPlayListItems.
-	// GetPlaylistItems does not work with the fields argument so cannot be used
 	playlistOptions = "limit,offset,total,items(track(id))"
-	// playlistItems, err := client.GetPlaylistTracks(context.Background(), id, spotify.Limit(50), spotify.Fields(playlistOptions))
-	// if err != nil {
-	// 	return playlistData, fmt.Errorf("Error:%w", err)
-	// }
 
 	playlistData.ID = string(playlistRequest.ID)
 	playlistData.Name = playlistRequest.Name
@@ -108,6 +106,9 @@ func getPlaylistData(client *spotify.Client, playlistID string) (playlistData Pl
 	return playlistData, nil
 }
 
+// Returns a struct containing additional data about the playlist which has been collected by anaylsing songs within the playlist
+// This is acheived by finding songs that appear both in the inputted playlist and the users top songs, making the assumption that
+// as the user likes these songs most, they will more accuratley represent the playlist.
 func GetPlaylistInfo(client *spotify.Client, ctx context.Context, playlistID string) (playlistInfo PlaylistAnalysisData, err error) {
 	playlistInfo = PlaylistAnalysisData{}
 	topTracks, err := getAllTopTrackIDs(client)
@@ -148,6 +149,7 @@ func GetPlaylistInfo(client *spotify.Client, ctx context.Context, playlistID str
 	return playlistInfo, nil
 }
 
+// Populate the AudioFeatures field
 func initializeAudioFeatures(playlistInfo *PlaylistAnalysisData, audioFeatures *AudioFeatures) {
 	playlistInfo.AudioFeatures = []AudioFeature{
 		{"Acousticness", audioFeatures.Acousticness},
@@ -158,6 +160,7 @@ func initializeAudioFeatures(playlistInfo *PlaylistAnalysisData, audioFeatures *
 	}
 }
 
+// Calculate the average (mean) of a slice of AudioFeatures and return them in a single struct
 func calculateAverageFeatures(features []AudioFeatures) AudioFeatures {
 	if len(features) == 0 {
 		return AudioFeatures{}
@@ -184,6 +187,7 @@ func calculateAverageFeatures(features []AudioFeatures) AudioFeatures {
 	return averageFeatures
 }
 
+// Get the audio features from a number of tracks
 func GetTrackAudioFeatures(client *spotify.Client, ctx context.Context, trackIDs []string) (trackAudioFeatures []AudioFeatures, err error) {
 	const maxTrackIDs = 100
 	arrayLength := min(maxTrackIDs, len(trackIDs))
@@ -212,6 +216,7 @@ func GetTrackAudioFeatures(client *spotify.Client, ctx context.Context, trackIDs
 	return trackAudioFeatures, nil
 }
 
+// By passing a slice of trackIDs, a slice of track structs are populated and returned.
 func GetTracks(client *spotify.Client, ctx context.Context, trackIDs []string) (tracks []Tracks, err error) {
 	const maxSpotifyTracks = 50
 	arrayLength := len(trackIDs)

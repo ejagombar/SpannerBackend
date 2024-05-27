@@ -51,6 +51,8 @@ func GetUserProfileInfo(client *spotify.Client, ctx context.Context) (User, erro
 	return userInfo, nil
 }
 
+// Returns a slice of PlaylistMetadata struct, containing all the playlist for the provided user.
+// Both public and private playlists are returned in the user is authenticated, else just the public playlists
 func UserPlaylists(client *spotify.Client, ctx context.Context, userID string) (userPlaylists []PlaylistMetadata, err error) {
 	playlists, err := client.GetPlaylistsForUser(ctx, userID, spotify.Limit(50))
 	if err != nil {
