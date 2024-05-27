@@ -13,6 +13,8 @@ type EnvVars struct {
 	PORT          string `mapstructure:"PORT"`
 }
 
+// Load secrets from environment variables / environemnt variable file
+// and return them in a struct.
 func LoadConfig() (config EnvVars, err error) {
 	env := os.Getenv("GO_ENV")
 	if env == "production" {

@@ -2,19 +2,19 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"time"
-
 	"github.com/ejagombar/SpannerBackend/config"
 	"github.com/ejagombar/SpannerBackend/internal/api"
 	"github.com/ejagombar/SpannerBackend/internal/storage"
 	"github.com/ejagombar/SpannerBackend/pkg/shutdown"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"os"
+	"time"
 )
 
+// Load the configuration, run the server, and handle graceful shutdown
+// and error handling.
 func main() {
-	// setup exit code for graceful shutdown
 	var exitCode int
 	defer func() {
 		os.Exit(exitCode)
@@ -39,6 +39,7 @@ func main() {
 	shutdown.Gracefully()
 }
 
+// Initialise and start the server, returning a cleanup function for graceful shutdown.
 func run(env config.EnvVars) (func(), error) {
 	app, err := buildServer(env)
 	if err != nil {
@@ -54,6 +55,10 @@ func run(env config.EnvVars) (func(), error) {
 	}, nil
 }
 
+// Sets up the server by loading the database to retrieve api keys.
+// This database is wrapped in a SpannerStorage object which is then
+// wrapped within a SpannerController struct along with the environment variables.
+// This allows all methods attatched to this struct to access this data, without making it global
 func buildServer(env config.EnvVars) (*fiber.App, error) {
 	db, err := storage.LoadBbolt("bbolt_db", 1*time.Second)
 	if err != nil {
@@ -71,6 +76,7 @@ func buildServer(env config.EnvVars) (*fiber.App, error) {
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.SendString("Healthy!")
 	})
+
 	spannerStore := api.NewSpannerStorage(db)
 	spannerController := api.NewSpannerController(spannerStore, &env)
 	api.AddTodoRoutes(app, spannerController)
