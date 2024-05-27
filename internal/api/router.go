@@ -5,7 +5,10 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func AddTodoRoutes(app *fiber.App, env config.EnvVars, spannerController *SpannerController) {
+// Set up the API routes for the Fiber web server
+// Routes are grouped under categories and each route is
+// associated with a handler function which is a method of SpannerController
+func AddSpannerRoutes(app *fiber.App, env config.EnvVars, spannerController *SpannerController) {
 
 	api := app.Group("/api", AppConfigMiddleware(&env))
 

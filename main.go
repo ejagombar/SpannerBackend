@@ -12,8 +12,9 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/session"
 )
 
+// Load the configuration, create a SpannerStorage struct, and then run the server.
+// This function also handls graceful shutdown and error handling.
 func main() {
-	// setup exit code for graceful shutdown
 	var exitCode int
 	defer func() {
 		os.Exit(exitCode)
@@ -26,13 +27,7 @@ func main() {
 		return
 	}
 
-	store := api.NewSpannerStorage(session.New(session.Config{
-		CookieSecure:   true,
-		CookieHTTPOnly: true,
-		KeyLookup:      "cookie:session_id",
-	}))
-
-	cleanup, err := run(env, store)
+	cleanup, err := run(env)
 
 	defer cleanup()
 	if err != nil {
@@ -44,8 +39,10 @@ func main() {
 	shutdown.Gracefully()
 }
 
-func run(env config.EnvVars, store *api.SpannerController) (func(), error) {
-	app, err := buildServer(env, store)
+// Initialise and start the server, returning a cleanup function for graceful shutdown.
+// The server is deployed on a go routine to allow the main process to listen for OS calls
+func run(env config.EnvVars) (func(), error) {
+	app, err := buildServer(env)
 	if err != nil {
 		return nil, err
 	}
@@ -59,8 +56,18 @@ func run(env config.EnvVars, store *api.SpannerController) (func(), error) {
 	}, nil
 }
 
-func buildServer(env config.EnvVars, store *api.SpannerController) (*fiber.App, error) {
+// Sets up the server by loading the database to retrieve api keys.
+// This database is wrapped in a SpannerStorage object which is then
+// wrapped within a SpannerController struct along with the environment variables.
+// This allows all methods attatched to this struct to access this data, without making it global
+func buildServer(env config.EnvVars) (*fiber.App, error) {
 	app := fiber.New()
+
+	store := api.NewSpannerStorage(session.New(session.Config{
+		CookieSecure:   true,
+		CookieHTTPOnly: true,
+		KeyLookup:      "cookie:session_id",
+	}))
 
 	app.Use(cors.New(cors.Config{
 		AllowOrigins:     "http://localhost:5173",
