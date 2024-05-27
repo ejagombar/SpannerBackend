@@ -1,10 +1,11 @@
 package spotify
 
 import (
-	"math/rand"
 	"errors"
+	"math/rand"
 )
 
+// Finds elements that are found in both string array and returns them
 func findCommonElements(slice1, slice2 []string) []string {
 	elementsMap := make(map[string]bool)
 
@@ -14,7 +15,6 @@ func findCommonElements(slice1, slice2 []string) []string {
 
 	var commonElements []string
 	for _, elem := range slice2 {
-		// Need to investigate how this map search is actually implemented.
 		if elementsMap[elem] {
 			commonElements = append(commonElements, elem)
 		}
@@ -23,14 +23,16 @@ func findCommonElements(slice1, slice2 []string) []string {
 	return commonElements
 }
 
-func addToSliceIfNotPresent(illegalElements, allElements []string) (out []string) {
+// Returns a slice of strings that contains the elements of allElements that are not
+// found in illegalElements
+func addToSliceIfNotPresent(allElements, illegalElements []string) (out []string) {
 	existingElements := make(map[string]bool)
 
-	for _, element := range allElements {
+	for _, element := range illegalElements {
 		existingElements[element] = true
 	}
 
-	for _, element := range illegalElements {
+	for _, element := range allElements {
 		if !existingElements[element] {
 			out = append(out, element)
 		}
@@ -39,14 +41,17 @@ func addToSliceIfNotPresent(illegalElements, allElements []string) (out []string
 	return out
 }
 
+// Fisher-Yates shuffle algorithm
 func shuffleStringSlice(slice []string) {
-	// Fisher-Yates shuffle algorithm
 	for i := len(slice) - 1; i > 0; i-- {
 		j := rand.Intn(i + 1)
 		slice[i], slice[j] = slice[j], slice[i]
 	}
 }
 
+// select a subset of ids from commonIDs and and playlistIDs for a given length. It ensures that the
+// result contains a certain number of elements from commonIds and the remaining from playlistIDs with
+// no duplicates.
 func selectIDSubset(commonIDs []string, playlistIDs []string, length int) (idsOut []string, err error) {
 	if length > len(playlistIDs) {
 		return nil, errors.New("Request length is larger than playlist length")
