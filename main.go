@@ -56,10 +56,9 @@ func run(env config.EnvVars) (func(), error) {
 	}, nil
 }
 
-// Sets up the server by loading the database to retrieve api keys.
-// This database is wrapped in a SpannerStorage object which is then
-// wrapped within a SpannerController struct along with the environment variables.
-// This allows all methods attatched to this struct to access this data, without making it global
+// Sets up and configures the server by creating a Fibre app instance,
+// setting up session storage using cookies, configurating CORS middleware,
+// and adding the main application routes.
 func buildServer(env config.EnvVars) (*fiber.App, error) {
 	app := fiber.New()
 
@@ -79,7 +78,7 @@ func buildServer(env config.EnvVars) (*fiber.App, error) {
 		return c.SendString("Healthy!")
 	})
 
-	api.AddTodoRoutes(app, env, store)
+	api.AddSpannerRoutes(app, env, store)
 
 	return app, nil
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+// Helper function to retreive token data from the session cookie and return it in a struct
 func (s *SpannerController) getTokenData(c *fiber.Ctx) (spotify.TokenData, error) {
 	tokenData := spotify.TokenData{}
 

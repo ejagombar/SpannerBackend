@@ -21,6 +21,7 @@ func AppConfigMiddleware(env *config.EnvVars) fiber.Handler {
 	}
 }
 
+// Generate random state string
 func generateState(n int) (string, error) {
 	data := make([]byte, n)
 	if _, err := io.ReadFull(rand.Reader, data); err != nil {
@@ -29,6 +30,8 @@ func generateState(n int) (string, error) {
 	return base64.StdEncoding.EncodeToString(data), nil
 }
 
+// Returns a login URL to authenticate with Spotify.
+// A random state is created and stored in the session cookie.
 func (s *SpannerController) Login(c *fiber.Ctx) error {
 	env := c.Locals("env").(*config.EnvVars)
 
@@ -54,6 +57,9 @@ func (s *SpannerController) Login(c *fiber.Ctx) error {
 	return c.SendString(address)
 }
 
+// This method completes the OAuth flow by exchanging an authorisation code
+// for an access token which are then stored in the session cookie. THis allows future API calls
+// to retreive the API key from the user to perform API requests against the spotify API
 func (s *SpannerController) CompleteAuth(c *fiber.Ctx) error {
 	env := c.Locals("env").(*config.EnvVars)
 	auth := spotify.CreateAuthRequest(env.CLIENT_ID, env.CLIENT_SECRET)
@@ -63,10 +69,9 @@ func (s *SpannerController) CompleteAuth(c *fiber.Ctx) error {
 		return err
 	}
 
-	// IMPORTANT: STATE IS CURRENTLY NOT BEING CHECKED
-	// if state := c.FormValue("state"); state != sess.Get("state") {
-	// 	return fmt.Errorf("state mismatch")
-	// }
+	if state := c.FormValue("state"); state != sess.Get("state") {
+		return fmt.Errorf("state mismatch")
+	}
 
 	tok, err := auth.Exchange(c.Context(), c.Query("code"))
 	if err != nil {
@@ -107,11 +112,11 @@ func (s *SpannerController) LoggedStatus(c *fiber.Ctx) error {
 func (s *SpannerController) Logout(c *fiber.Ctx) error {
 	sess, err := s.session.Get(c)
 	if err != nil {
-		return err
+		return fmt.Errorf("Here we are %w", err)
 	}
 
 	if err := sess.Destroy(); err != nil {
-		return err
+		return fmt.Errorf("Here we are2 %w", err)
 	}
 
 	return c.SendStatus(fiber.StatusOK)

@@ -54,16 +54,3 @@ func (s *SpannerController) PlaylistAnalysis(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(playlistAnalysis)
 }
-
-// func (s *SpannerController) TopPlaylistTracks(c *fiber.Ctx) error {
-// 	tokenData, err := s.getTokenData(c)
-// 	if err != nil {
-// 		return err
-// 	}
-//
-// 	client, err := spotify.GetClient(c.Context(), tokenData)
-// 	if err != nil {
-// 		return err
-// 	}
-//
-// }
